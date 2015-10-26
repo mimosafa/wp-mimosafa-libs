@@ -176,6 +176,9 @@ class View {
 		else if ( isset( $items ) && $items ) {
 			$callback = [ $this, 'option_callback_select' ];
 		}
+		else {
+			$callback = [ $this, 'option_callback_text' ];
+		}
 		echo call_user_func( $callback, $args );
 		echo isset( $content_after ) ? $content_after : '';
 		echo isset( $p ) ? '</p>' : '';
