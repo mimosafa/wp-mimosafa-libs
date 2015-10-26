@@ -1,0 +1,12 @@
+/**
+ * Settings Page Styles
+ *
+ * <input>/<label> @todo rtl
+ */
+input[type="checkbox"].label_before {
+  margin-left: 4px;
+}
+input[type="text"].labeled {
+  margin-right: 4px;
+  margin-left: 4px;
+}
