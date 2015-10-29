@@ -58,7 +58,7 @@ class Register {
 			$self->taxonomies[] = [
 				'taxonomy'    => $taxonomy,
 				'object_type' => (array) $object_type,
-				'args'        => $args
+				'args'        => (array) $args
 			];
 		}
 	}
@@ -77,7 +77,7 @@ class Register {
 			$self = self::instance();
 			$self->post_types[] = [
 				'post_type' => $post_type,
-				'args'      => $args
+				'args'      => (array) $args
 			];
 		}
 	}

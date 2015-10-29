@@ -83,7 +83,7 @@ abstract class Repository {
 	 * @access public
 	 *
 	 * @param  string $name
-	 * @param  mixed  $label|$type|$args Variable-length argument lists
+	 * @param  mixed  $label, $type, $args # Variable-length arguments
 	 * @return object
 	 */
 	public static function init() {
