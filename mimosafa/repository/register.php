@@ -96,7 +96,7 @@ class Register {
 				 * @var array  $args
 				 */
 				extract( $tx, EXTR_OVERWRITE );
-				$args = apply_filters( 'mimosafa_register_taxonomy_args', $args, $taxonomy );
+				$args = apply_filters( 'mimosafa_register_taxonomy_args', $args, $taxonomy, $object_type );
 				register_taxonomy( $taxonomy, $object_type, $args );
 			}
 		}
@@ -109,6 +109,15 @@ class Register {
 	 */
 	public function register_post_types() {
 		if ( ! empty( $this->post_types ) ) {
+			/**
+			 * Theme Support: Thumbnail
+			 *
+			 * @var boolean
+			 */
+			static $thumbnail_supported;
+			if ( ! isset( $thumbnail_supported ) ) {
+				$thumbnail_supported = current_theme_supports( 'post-thumbnails' );
+			}
 			foreach ( $this->post_types as $pt ) {
 				/**
 				 * @var string $post_type
@@ -132,16 +141,6 @@ class Register {
 						}
 						$args['taxonomies'] = array_unique( array_merge( $args['taxonomies'], $taxonomies ) );
 					}
-				}
-				/**
-				 * Theme Support Thumbnail
-				 */
-				static $thumbnail_supported;
-				if ( ! isset( $thumbnail_supported ) ) {
-					/**
-					 * @var boolean
-					 */
-					$thumbnail_supported = current_theme_supports( 'post-thumbnails' );
 				}
 				if ( ! $thumbnail_supported && isset( $args['supports'] ) && in_array( 'thumbnail', (array) $args['supports'], true ) ) {
 					add_theme_support( 'post-thumbnails' );
