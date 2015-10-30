@@ -59,17 +59,4 @@ class Registry extends Repository\Registry {
 		return $name;
 	}
 
-	/**
-	 * Regulate Arguments for Registration
-	 *
-	 * @access public
-	 *
-	 * @param  string &$name # Taxonomy Name
-	 * @param  array  &$args # Registration Arguments for Taxonomy
-	 */
-	public static function arguments( &$name, Array &$args ) {
-		Labels::init( $name, $args );
-		$name = self::$prefix . $name;
-	}
-
 }

@@ -29,26 +29,11 @@ abstract class Repository {
 	protected $name;
 
 	/**
-	 * Labels for Registration
-	 *
-	 * @var array
-	 */
-	protected $labels = [];
-
-	/**
 	 * Arguments for Registration
 	 *
 	 * @var array
 	 */
 	protected $args = [];
-
-	/**
-	 * Abstract: Repository's Fixed(Defined) Formats
-	 *
-	 * @var    array
-	 * @access protected
-	 */
-	# protected static $prototypes;
 
 	/**
 	 * Abstract: Register Repository
@@ -62,6 +47,8 @@ abstract class Repository {
 	 *
 	 * @access protected
 	 *
+	 * @uses   mimosafa\WP\Repository\{PostType|Taxonomy}\Registry
+	 *
 	 * @param  string      $name
 	 * @param  null|string $label
 	 * @param  null|string $type
@@ -73,11 +60,14 @@ abstract class Repository {
 		}
 		$registry = get_called_class() . '\\Registry';
 		if ( $type ) {
-			$this->args = array_merge( $this->args, $registry::prototypes()[$type] );
+			$args = array_merge( $args, $registry::prototypes()[$type] );
 		}
 		call_user_func_array( [ $registry, 'arguments' ], [ &$name, &$args ] );
-		$this->args = array_merge( $this->args, $args );
+		$this->args = $args;
 		$this->name = $name;
+		/**
+		 * Register Repository
+		 */
 		add_action( 'init', [ $this, 'register' ], 0 );
 	}
 
@@ -85,6 +75,8 @@ abstract class Repository {
 	 * Initialize & Return Instance
 	 *
 	 * @access public
+	 *
+	 * @uses   mimosafa\WP\Repository\{PostType|Taxonomy}\Registry
 	 *
 	 * @param  string $name
 	 * @param  mixed  $label, $type, $args # Variable-length arguments
@@ -167,6 +159,12 @@ abstract class Repository {
 		return null;
 	}
 
+	/**
+	 * @access protected
+	 *
+	 * @param  string  $var
+	 * @return boolean
+	 */
 	protected static function isPrototype( $var ) {
 		$registry = get_called_class() . '\\Registry';
 		return isset( $registry::prototypes()[$var] );

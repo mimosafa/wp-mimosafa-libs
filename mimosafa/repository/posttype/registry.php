@@ -66,9 +66,6 @@ class Registry extends Repository\Registry {
 	 */
 	public static function arguments( &$name, Array &$args ) {
 		parent::arguments( $name, $args );
-		return;
-		Labels::init( $name, $args );
-		$name = self::$prefix . $name;
 	}
 
 }

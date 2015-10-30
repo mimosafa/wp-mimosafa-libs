@@ -86,6 +86,8 @@ class Register {
 	 * Register Taxonomies
 	 *
 	 * @access private
+	 *
+	 * @uses   mimosafa\WP\Repository\Taxonomy\Labels::init()
 	 */
 	public function register_taxonomies() {
 		if ( ! empty( $this->taxonomies ) ) {
@@ -96,6 +98,7 @@ class Register {
 				 * @var array  $args
 				 */
 				extract( $tx, EXTR_OVERWRITE );
+				Taxonomy\Labels::init( $taxonomy, $args );
 				register_taxonomy( $taxonomy, $object_type, $args );
 			}
 		}
@@ -105,6 +108,8 @@ class Register {
 	 * Register Post Types
 	 *
 	 * @access private
+	 *
+	 * @uses   mimosafa\WP\Repository\PostType\Labels::init()
 	 */
 	public function register_post_types() {
 		if ( ! empty( $this->post_types ) ) {
@@ -123,6 +128,8 @@ class Register {
 				 * @var array  $args
 				 */
 				extract( $pt, EXTR_OVERWRITE );
+				PostType\Labels::init( $post_type, $args );
+
 				/**
 				 * Registered Object Type
 				 */

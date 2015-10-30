@@ -28,12 +28,12 @@ abstract class Labels {
 	/**
 	 * Labelize Method
 	 *
-	 * @access protected
+	 * @access public
 	 *
 	 * @param  string $name
 	 * @return string
 	 */
-	protected static function labelize( $name ) {
+	public static function labelize( $name ) {
 		return ucwords( str_replace( [ '-', '_' ], ' ', $name ) );
 	}
 

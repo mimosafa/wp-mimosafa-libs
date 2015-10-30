@@ -68,9 +68,9 @@ abstract class Registry {
 	 * @param  array  &$args # Registration Arguments for Taxonomy
 	 */
 	public static function arguments( &$name, Array &$args ) {
-		$class = get_called_class();
-		$func = [ substr( $class, 0, strrpos( $class, '\\' ) ) . '\\Labels', 'init' ];
-		call_user_func_array( $func, [ &$name, &$args ] );
+		if ( ! isset( $args['label'] ) || ! filter_var( $args['label'] ) ) {
+			$args['label'] = Labels::labelize( $name );
+		}
 		$name = static::$prefix . $name;
 	}
 
