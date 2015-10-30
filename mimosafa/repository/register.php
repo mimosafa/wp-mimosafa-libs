@@ -96,7 +96,6 @@ class Register {
 				 * @var array  $args
 				 */
 				extract( $tx, EXTR_OVERWRITE );
-				$args = apply_filters( 'mimosafa_register_taxonomy_args', $args, $taxonomy, $object_type );
 				register_taxonomy( $taxonomy, $object_type, $args );
 			}
 		}
@@ -124,7 +123,6 @@ class Register {
 				 * @var array  $args
 				 */
 				extract( $pt, EXTR_OVERWRITE );
-				$args = apply_filters( 'mimosafa_register_post_type_args', $args, $post_type );
 				/**
 				 * Registered Object Type
 				 */
