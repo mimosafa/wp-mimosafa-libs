@@ -142,6 +142,7 @@ class Labels extends Repository\Labels {
 		static $enter_title_here;
 		if ( ! $enter_title_here && isset( $labels['enter_title_here'] ) ) {
 			add_filter( 'enter_title_here', [ $this, 'enter_title_here' ], 10, 2 );
+			$enter_title_here = true;
 		}
 	}
 

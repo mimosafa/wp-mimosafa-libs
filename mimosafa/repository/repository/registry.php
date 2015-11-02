@@ -44,10 +44,41 @@ abstract class Registry {
 		return is_string( $name ) && $name && $name === sanitize_key( $name ) ? $name : null;
 	}
 
-	public static function prefix( $string ) {
+	/**
+	 * Set Registry
+	 *
+	 * @access public
+	 *
+	 * @param  string
+	 * @param  mixed
+	 */
+	public static function set( $key, $value ) {
+		/**
+		 * Common
+		 */
 		if ( get_called_class() === __CLASS__ ) {
-			self::$prefix = $string;
+			if ( $key === 'prefix' ) {
+				if ( $value ) {
+					if ( is_string( $value ) && $value === sanitize_key( $value ) && strlen( $value ) < 17 ) {
+						self::$prefix = $value;
+					}
+				}
+				else {
+					self::$prefix = null;
+				}
+			}
 		}
+	}
+
+	/**
+	 * Reset Registry
+	 *
+	 * @access public
+	 *
+	 * @param  string $key
+	 */
+	public static function reset( $key ) {
+		return static::set( $key, null );
 	}
 
 	/**
