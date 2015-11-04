@@ -23,4 +23,20 @@ class PostType extends Repository {
 		Register::post_type( $this->name, $this->args );
 	}
 
+	/**
+	 * Attach Other Repositories for Post Type
+	 *
+	 * @access public
+	 *
+	 * @param  string|mimosafa\Repository\Repos $repository
+	 * @return mimosafa\WP\Repository\PostType
+	 */
+	public function attach( $repository ) {
+		if ( $repository = self::getRepos( $repository ) ) {
+			if ( $repository instanceof Taxonomy ) {
+				$repository->attach( $this->name );
+			}
+		}
+	}
+
 }

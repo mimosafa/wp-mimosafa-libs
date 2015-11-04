@@ -12,7 +12,7 @@ namespace mimosafa\WP\Repository;
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  */
-abstract class Repository {
+abstract class Repository implements Repos {
 
 	/**
 	 * Object Instances (Singleton Pattern)
@@ -20,6 +20,11 @@ abstract class Repository {
 	 * @var array
 	 */
 	protected static $instances = [];
+
+	/**
+	 * @var array
+	 */
+	protected static $ids = [];
 
 	/**
 	 * Repository's Name
@@ -55,6 +60,7 @@ abstract class Repository {
 	 * @param  array       $args
 	 */
 	protected function __construct( $name, $label, $type, Array $args ) {
+		$id = $name;
 		if ( $label ) {
 			$args['label'] = $label;
 		}
@@ -65,6 +71,7 @@ abstract class Repository {
 		call_user_func_array( [ $registry, 'arguments' ], [ &$name, &$args ] );
 		$this->args = $args;
 		$this->name = $name;
+		self::$ids[$name] = $id;
 		/**
 		 * Register Repository
 		 */
@@ -157,6 +164,24 @@ abstract class Repository {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @access protected
+	 *
+	 * @param  string|mimosafa\WP\Repository\Repos $repository
+	 * @return mimosafa\WP\Repository\Repos|null
+	 */
+	protected static function getRepos( $repository ) {
+		if ( is_string( $repository ) ) {
+			if ( isset( self::$instances[$repository] ) ) {
+				$repository = self::$instances[$repository];
+			}
+			else if ( isset( self::$ids[$repository] ) ) {
+				$repository = self::$instances[self::$ids[$repository]];
+			}
+		}
+		return is_object( $repository ) && $repository instanceof Repos ? $repository : null;
 	}
 
 	/**

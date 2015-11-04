@@ -17,7 +17,7 @@ class Taxonomy extends Repository {
 	/**
 	 * @var array
 	 */
-	private $object_type = [];
+	private $object_types = [];
 
 	/**
 	 * Register Post Type
@@ -25,7 +25,7 @@ class Taxonomy extends Repository {
 	 * @access public
 	 */
 	public function register() {
-		Register::taxonomy( $this->name, array_unique( $this->object_type ), $this->args );
+		Register::taxonomy( $this->name, array_unique( $this->object_types ), $this->args );
 	}
 
 	/**
@@ -42,6 +42,26 @@ class Taxonomy extends Repository {
 			}
 		}
 		$this->object_type = array_merge( $this->object_type, $object_type );
+		return $this;
+	}
+
+	/**
+	 * Attach Other Repositories for Taxonomy
+	 *
+	 * @access public
+	 *
+	 * @param  string|mimosafa\Repository\Repos $repository
+	 * @return mimosafa\WP\Repository\Taxonomy
+	 */
+	public function attach( $repository ) {
+		if ( $repository = self::getRepos( $repository ) ) {
+			if ( $repository instanceof PostType ) {
+				$name = $repository->name;
+				if ( ! in_array( $name, $this->object_types, true ) ) {
+					$this->object_types[] = $repository->name;
+				}
+			}
+		}
 		return $this;
 	}
 
