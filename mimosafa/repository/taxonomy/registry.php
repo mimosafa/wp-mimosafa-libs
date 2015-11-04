@@ -52,11 +52,50 @@ class Registry extends Repository\Registry {
 	 */
 	public static function validateName( $name ) {
 		if ( $name = parent::validateName( $name ) ) {
-			if ( strlen( self::$prefix . $name ) > 32 || @preg_match( '/[0-9]/', $name ) ) {
+			/**
+			 * Taxonomy Name Regulation
+			 *
+			 * @see http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
+			 */
+			if ( strlen( self::$prefix . $name ) > 32 || @preg_match( '/[0-9]\-/', $name ) ) {
 				$name = null;
 			}
 		}
 		return $name;
+	}
+
+	/**
+	 * Regulate Arguments for Registration
+	 *
+	 * @access public
+	 *
+	 * @param  string &$name # Taxonomy Name
+	 * @param  array  &$args # Registration Arguments for Taxonomy
+	 */
+	public static function arguments( &$name, Array &$args ) {
+		$_name = $name;
+		parent::arguments( $name, $args );
+		if ( self::$prefix ) {
+			if ( strpos( $name, '-' ) ) {
+				/**
+				 * Taxonomy Name Regulation
+				 *
+				 * @see http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
+				 */
+				$name = str_replace( '-', '_', $name );
+			}
+			if ( isset( $args['public'] ) && $args['public'] ) {
+				/**
+				 * Regulate Rewrite Slug
+				 */
+				if ( ! isset( $args['rewrite'] ) || $args['rewrite'] !== false ) {
+					if ( ! isset( $args['rewrite'] ) || ! is_array( $args['rewrite'] ) ) {
+						$args['rewrite'] = [];
+					}
+					$args['rewrite']['slug'] = $_name;
+				}
+			}
+		}
 	}
 
 }

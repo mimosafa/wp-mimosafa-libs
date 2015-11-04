@@ -53,6 +53,11 @@ class Registry extends Repository\Registry {
 	 * @return string|null
 	 */
 	public static function validateName( $name ) {
+		/**
+		 * Post Type Name Regulation
+		 *
+		 * @see http://codex.wordpress.org/Function_Reference/register_post_type#Parameters
+		 */
 		return ( $name = parent::validateName( $name ) ) && strlen( self::$prefix . $name ) < 21 ? $name : null;
 	}
 
@@ -65,7 +70,23 @@ class Registry extends Repository\Registry {
 	 * @param  array  &$args # Registration Arguments for Post Type
 	 */
 	public static function arguments( &$name, Array &$args ) {
+		$_name = $name;
 		parent::arguments( $name, $args );
+		if ( self::$prefix ) {
+			if ( ( isset( $args['publicly_queryable'] ) && $args['publicly_queryable'] )
+				|| ( isset( $args['public'] ) && $args['public'] ) )
+			{
+				/**
+				 * Regulate Rewrite Slug
+				 */
+				if ( ! isset( $args['rewrite'] ) || $args['rewrite'] !== false ) {
+					if ( ! isset( $args['rewrite'] ) || ! is_array( $args['rewrite'] ) ) {
+						$args['rewrite'] = [];
+					}
+					$args['rewrite']['slug'] = $_name;
+				}
+			}
+		}
 	}
 
 }
