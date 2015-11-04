@@ -41,6 +41,18 @@ abstract class Repository implements Repos {
 	protected $args = [];
 
 	/**
+	 * WordPress Built-in Repositories
+	 *
+	 * @var array
+	 */
+	protected static $builtins = [
+		'post'     => 'PostType',
+		'page'     => 'PostType',
+		'category' => 'Taxonomy',
+		'post_tag' => 'Taxonomy',
+	];
+
+	/**
 	 * Abstract: Register Repository
 	 *
 	 * @access public
@@ -61,15 +73,17 @@ abstract class Repository implements Repos {
 	 */
 	protected function __construct( $name, $label, $type, Array $args ) {
 		$id = $name;
-		if ( $label ) {
-			$args['label'] = $label;
+		if ( ! $this->_builtin ) {
+			if ( $label ) {
+				$args['label'] = $label;
+			}
+			$registry = get_called_class() . '\\Registry';
+			if ( $type ) {
+				$args = array_merge( $args, $registry::prototypes()[$type] );
+			}
+			call_user_func_array( [ $registry, 'arguments' ], [ &$name, &$args ] );
+			$this->args = $args;
 		}
-		$registry = get_called_class() . '\\Registry';
-		if ( $type ) {
-			$args = array_merge( $args, $registry::prototypes()[$type] );
-		}
-		call_user_func_array( [ $registry, 'arguments' ], [ &$name, &$args ] );
-		$this->args = $args;
 		$this->name = $name;
 		self::$ids[$name] = $id;
 		/**
@@ -154,7 +168,7 @@ abstract class Repository implements Repos {
 	 * @access public
 	 *
 	 * @param  string $name
-	 * @return object|null
+	 * @return mimosafa\WP\Repository\Repos|null
 	 */
 	public static function getInstance( $name ) {
 		if ( ( $name = filter_var( $name ) ) && isset( self::$instances[$name] ) ) {
@@ -179,6 +193,10 @@ abstract class Repository implements Repos {
 			}
 			else if ( isset( self::$ids[$repository] ) ) {
 				$repository = self::$instances[self::$ids[$repository]];
+			}
+			else if ( isset( self::$builtins[$repository] ) ) {
+				$init = __NAMESPACE__ . '\\' . self::$builtins[$repository] . '::init';
+				$repository = call_user_func( $init, $repository );
 			}
 		}
 		return is_object( $repository ) && $repository instanceof Repos ? $repository : null;

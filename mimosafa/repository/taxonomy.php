@@ -15,9 +15,39 @@ namespace mimosafa\WP\Repository;
 class Taxonomy extends Repository {
 
 	/**
+	 * @var boolean
+	 */
+	protected $_builtin = false;
+
+	/**
 	 * @var array
 	 */
 	private $object_types = [];
+
+	/**
+	 * Constructor
+	 *
+	 * @access protected
+	 *
+	 * @uses   mimosafa\WP\Repository\Repository::__construct()
+	 *
+	 * @param  string      $name
+	 * @param  null|string $label
+	 * @param  null|string $type
+	 * @param  array       $args
+	 */
+	protected function __construct( $name, $label, $type, Array $args ) {
+		if ( isset( self::$builtins[$name] ) ) {
+			if ( self::$builtins[$name] === 'Taxonomy' ) {
+				$this->_builtin = true;
+			}
+			else {
+				unset( self::$instances[$name] );
+				return;
+			}
+		}
+		parent::__construct( $name, $label, $type, $args );
+	}
 
 	/**
 	 * Register Post Type
@@ -25,7 +55,18 @@ class Taxonomy extends Repository {
 	 * @access public
 	 */
 	public function register() {
-		Register::taxonomy( $this->name, array_unique( $this->object_types ), $this->args );
+		if ( ! $this->_builtin ) {
+			Register::taxonomy( $this->name, array_unique( $this->object_types ), $this->args );
+		}
+		else {
+			if ( $this->object_types ) {
+				add_action( 'registered_post_type', function( $post_type ) {
+					if ( in_array( $post_type, $this->object_types, true ) ) {
+						register_taxonomy_for_object_type( $this->name, $post_type );
+					}
+				} );
+			}
+		}
 	}
 
 	/**

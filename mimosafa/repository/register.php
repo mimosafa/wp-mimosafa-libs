@@ -100,6 +100,16 @@ class Register {
 				extract( $tx, EXTR_OVERWRITE );
 				Taxonomy\Labels::init( $taxonomy, $args );
 				register_taxonomy( $taxonomy, $object_type, $args );
+				if ( $object_type ) {
+					foreach ( $object_type as $obj ) {
+						if ( post_type_exists( $obj ) ) {
+							/**
+							 * Built-in Post Types
+							 */
+							register_taxonomy_for_object_type( $taxonomy, $obj );
+						}
+					}
+				}
 			}
 		}
 	}

@@ -15,12 +15,44 @@ namespace mimosafa\WP\Repository;
 class PostType extends Repository {
 
 	/**
+	 * @var boolean
+	 */
+	protected $_builtin = false;
+
+	/**
+	 * Constructor
+	 *
+	 * @access protected
+	 *
+	 * @uses   mimosafa\WP\Repository\Repository::__construct()
+	 *
+	 * @param  string      $name
+	 * @param  null|string $label
+	 * @param  null|string $type
+	 * @param  array       $args
+	 */
+	protected function __construct( $name, $label, $type, Array $args ) {
+		if ( isset( self::$builtins[$name] ) ) {
+			if ( self::$builtins[$name] === 'PostType' ) {
+				$this->_builtin = true;
+			}
+			else {
+				unset( self::$instances[$name] );
+				return;
+			}
+		}
+		parent::__construct( $name, $label, $type, $args );
+	}
+
+	/**
 	 * Register Post Type
 	 *
 	 * @access public
 	 */
 	public function register() {
-		Register::post_type( $this->name, $this->args );
+		if ( ! $this->_builtin ) {
+			Register::post_type( $this->name, $this->args );
+		}
 	}
 
 	/**
