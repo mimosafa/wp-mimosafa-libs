@@ -41,6 +41,11 @@ abstract class Repository implements Repos {
 	protected $args = [];
 
 	/**
+	 * @var boolean
+	 */
+	protected $_builtin = false;
+
+	/**
 	 * WordPress Built-in Repositories
 	 *
 	 * @var array
@@ -73,7 +78,15 @@ abstract class Repository implements Repos {
 	 */
 	protected function __construct( $name, $label, $type, Array $args ) {
 		$id = $name;
-		if ( ! $this->_builtin ) {
+		if ( isset( self::$builtins[$name] ) ) {
+			$maybe = __NAMESPACE__ . '\\' . self::$builtins[$name];
+			if ( $maybe !== get_called_class() ) {
+				unset( self::$instances[$name] );
+				return;
+			}
+			$this->_builtin = true;
+		}
+		else {
 			if ( $label ) {
 				$args['label'] = $label;
 			}
@@ -186,7 +199,7 @@ abstract class Repository implements Repos {
 	 * @param  string|mimosafa\WP\Repository\Repos $repository
 	 * @return mimosafa\WP\Repository\Repos|null
 	 */
-	protected static function getRepos( $repository ) {
+	protected static function getRepository( $repository ) {
 		if ( is_string( $repository ) ) {
 			if ( isset( self::$instances[$repository] ) ) {
 				$repository = self::$instances[$repository];

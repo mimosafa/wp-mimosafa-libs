@@ -1,9 +1,27 @@
 <?php
+use mimosafa\WP\Repository as Repos;
 
-class RepositoryRegisterTest extends WP_UnitTestCase {
+class mimosafaRepositoryTest extends WP_UnitTestCase {
 
-	function test_repository_register() {
-		mimosafa\WP\Repository\Register::post_type( 'aaa' );
+	/**
+	 * setUp
+	 */
+	public function setUp() {
+		parent::setUp();
+	}
+
+	/**
+	 * tearDown
+	 */
+	public function tearDown() {
+		parent::tearDown();
+	}
+
+	/**
+	 * @group repository_register
+	 */
+	public function test_repository_register() {
+		Repos\Register::post_type( 'aaa' );
 		$args = [ 'post_type' => 'aaa' ];
 		$id = $this->factory->post->create( $args );
 		$post = get_post( $id );
