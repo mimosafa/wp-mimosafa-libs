@@ -16,6 +16,28 @@ use mimosafa\WP\Repository\Repository as Repository;
 class Registry extends Repository\Registry {
 
 	/**
+	 * Default Arguments
+	 *
+	 * @var array
+	 */
+	protected static $defaults = [
+		'labels'             => [],
+		'description'        => '',
+		'public'             => true,
+		'hierarchical'       => false,
+		'show_ui'            => null,
+		'show_in_menu'       => null,
+		'show_in_nav_menus'  => null,
+		'show_tagcloud'      => null,
+		'show_in_quick_edit' => null,
+		'show_admin_column'  => false,
+		'meta_box_cb'        => null,
+		'capabilities'       => [],
+		'rewrite'            => true,
+		'query_var'          => ''
+	];
+
+	/**
 	 * Prototypes for Taxonomy
 	 *
 	 * @var array

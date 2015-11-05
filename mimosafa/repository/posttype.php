@@ -15,6 +15,15 @@ namespace mimosafa\WP\Repository;
 class PostType extends Repository {
 
 	/**
+	 * Initialize Post Type
+	 *
+	 * @access protected
+	 */
+	protected function init_repository() {
+		add_action( 'init', [ $this, 'register' ], 0 );
+	}
+
+	/**
 	 * Register Post Type
 	 *
 	 * @access public

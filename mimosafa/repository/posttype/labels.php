@@ -50,9 +50,9 @@ class Labels extends Repository\Labels {
 	 */
 	protected static $featured_image = [
 		# 'featured_image'        => '%s',
-		'set_featured_image'    => 'Set %s',
-		'remove_featured_image' => 'Remove %s',
-		'use_featured_image'    => 'Use as %s'
+		'set_featured_image'    => [ 'fi', 'Set %s' ],
+		'remove_featured_image' => [ 'fi', 'Remove %s' ],
+		'use_featured_image'    => [ 'fi', 'Use as %s' ]
 	];
 
 	/**
@@ -113,19 +113,37 @@ class Labels extends Repository\Labels {
 	 */
 	protected static function generate_labels( Array $formats, $plural, $singular, $featured_image = '' ) {
 		$labels = [];
+		/**
+		 * @var array $f
+		 */
 		foreach ( $formats as $key => $f ) {
-			if ( is_array( $f ) ) {
-				$string = $f[0] === 'singular' ? $singular : $plural;
-				if ( is_array( $f[1] ) ) {
-					$format = _x( $f[1][0], $f[1][1], 'wp-mimosafa-libs' );
-				} else {
-					$format = __( $f[1], 'wp-mimosafa-libs' );
+			/**
+			 * Label String
+			 */
+			if ( $f[0] === 'plural' ) {
+				$string = $plural;
+			}
+			else if ( $f[0] === 'singular' ) {
+				$string = $singular;
+			}
+			else if ( $f[0] === 'fi' ) {
+				if ( ! $string = $featured_image ) {
+					continue;
 				}
-				$labels[$key] = sprintf( $format, $string );
 			}
-			else if ( $featured_image ) {
-				$labels[$key] = sprintf( __( $f, 'wp-mimosafa-libs' ), $featured_image );
+			/**
+			 * Label Format
+			 */
+			if ( is_array( $f[1] ) ) {
+				$format = _x( $f[1][0], $f[1][1], 'wp-mimosafa-libs' );
 			}
+			else {
+				$format = __( $f[1], 'wp-mimosafa-libs' );
+			}
+			/**
+			 * Generate Label
+			 */
+			$labels[$key] = sprintf( $format, $string );
 		}
 		return $labels;
 	}

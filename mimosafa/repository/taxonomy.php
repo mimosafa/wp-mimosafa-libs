@@ -20,6 +20,15 @@ class Taxonomy extends Repository {
 	private $object_types = [];
 
 	/**
+	 * Initialize Taxonomy
+	 *
+	 * @access protected
+	 */
+	protected function init_repository() {
+		add_action( 'init', [ $this, 'register' ], 0 );
+	}
+
+	/**
 	 * Register Post Type
 	 *
 	 * @access public

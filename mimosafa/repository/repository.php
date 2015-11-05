@@ -27,7 +27,7 @@ abstract class Repository implements Repos {
 	protected static $ids = [];
 
 	/**
-	 * Repository's Name
+	 * Repository's Name (with Prefix)
 	 *
 	 * @var string
 	 */
@@ -51,10 +51,28 @@ abstract class Repository implements Repos {
 	 * @var array
 	 */
 	protected static $builtins = [
-		'post'     => 'PostType',
-		'page'     => 'PostType',
+		/**
+		 * Post Types
+		 */
+		'post' => 'PostType',
+		'page' => 'PostType',
+		'attachment' => 'PostType',
+
+		/**
+		 * Taxonomies
+		 */
 		'category' => 'Taxonomy',
 		'post_tag' => 'Taxonomy',
+	];
+
+	/**
+	 * Black List for Repository Name
+	 *
+	 * @var array
+	 */
+	protected static $blacklist = [
+		'revision', 'nav_menu_item',
+		'link_category', 'post_format'
 	];
 
 	/**
@@ -62,7 +80,7 @@ abstract class Repository implements Repos {
 	 *
 	 * @access public
 	 */
-	abstract public function register();
+	abstract protected function init_repository();
 
 	/**
 	 * Constructor
@@ -78,15 +96,28 @@ abstract class Repository implements Repos {
 	 */
 	protected function __construct( $name, $label, $type, Array $args ) {
 		$id = $name;
+		if ( in_array( $name, self::$blacklist, true ) ) {
+			/**
+			 * Black List
+			 */
+			unset( self::$instances[$id] );
+			return;
+		}
 		if ( isset( self::$builtins[$name] ) ) {
+			/**
+			 * Built-ins
+			 */
 			$maybe = __NAMESPACE__ . '\\' . self::$builtins[$name];
 			if ( $maybe !== get_called_class() ) {
-				unset( self::$instances[$name] );
+				unset( self::$instances[$id] );
 				return;
 			}
 			$this->_builtin = true;
 		}
 		else {
+			/**
+			 * Custom Repository
+			 */
 			if ( $label ) {
 				$args['label'] = $label;
 			}
@@ -95,14 +126,23 @@ abstract class Repository implements Repos {
 				$args = array_merge( $args, $registry::prototypes()[$type] );
 			}
 			call_user_func_array( [ $registry, 'arguments' ], [ &$name, &$args ] );
+			/**
+			 * To Avoid Overwriting of Built-in/Existing Repository
+			 *
+			 * @var string $name # Repository's System Registered Name
+			 */
+			if ( in_array( $name, self::$ids, true ) || isset( self::$builtins[$name] ) || in_array( $name, self::$blacklist, true ) ) {
+				unset( self::$instances[$id] );
+				return;
+			}
 			$this->args = $args;
 		}
 		$this->name = $name;
 		self::$ids[$name] = $id;
 		/**
-		 * Register Repository
+		 * Initialize Repository
 		 */
-		add_action( 'init', [ $this, 'register' ], 0 );
+		$this->init_repository();
 	}
 
 	/**
@@ -208,8 +248,11 @@ abstract class Repository implements Repos {
 				$repository = self::$instances[self::$ids[$repository]];
 			}
 			else if ( isset( self::$builtins[$repository] ) ) {
-				$init = __NAMESPACE__ . '\\' . self::$builtins[$repository] . '::init';
-				$repository = call_user_func( $init, $repository );
+				$class = __NAMESPACE__ . '\\' . self::$builtins[$repository];
+				if ( class_exists( $class ) ) {
+					$init = $class . '::init';
+					$repository = call_user_func( $init, $repository );
+				}
 			}
 		}
 		return is_object( $repository ) && $repository instanceof Repos ? $repository : null;
