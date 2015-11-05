@@ -42,7 +42,16 @@ class Registry extends Repository\Registry {
 	 * @param  array  &$args # Registration Arguments for Taxonomy
 	 */
 	public static function arguments( &$name, Array &$args ) {
-		//
+		if ( ! isset( $args['places'] ) || ! is_int( $args['places'] ) || $args['places'] < 0 ) {
+			$args['places'] = \EP_ROOT;
+		}
+		if ( self::$prefix ) {
+			$_name = $name;
+			$name = self::$prefix . $name;
+			if ( ! isset( $args['rewrite'] ) || ! is_string( $args['rewrite'] ) || ! $args['rewrite'] ) {
+				$args['rewrite'] = $_name;
+			}
+		}
 	}
 
 }

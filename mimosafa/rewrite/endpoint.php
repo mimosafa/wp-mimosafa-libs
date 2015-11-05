@@ -20,12 +20,17 @@ class Endpoint {
 	private $endpoints = [];
 
 	/**
+	 * @var array
+	 */
+	private $query_vars = [];
+
+	/**
 	 * Default Arguments
 	 *
 	 * @var array
 	 */
 	private static $defaults = [
-		'places'     => \EP_ROOT,
+		'places'    => 0, // EP_NONE
 		'query_var' => true,
 		'rewrite'   => '',
 	];
@@ -89,23 +94,45 @@ class Endpoint {
 		if ( ! empty( $this->endpoints ) ) {
 			foreach ( $this->endpoints as $endpoint => $args ) {
 				add_rewrite_endpoint( $args->rewrite, $args->places, $args->query_var );
+				if ( $args->query_var ) {
+					$this->query_vars[$args->query_var] = $args;
+				}
 			}
-			add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
+			if ( $this->query_vars ) {
+				add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
+				add_action( 'template_redirect', [ $this, 'template_redirect' ] );
+			}
 		}
 	}
 
 	/**
 	 * Add Query Vars for Endpoints
 	 *
-	 * @param  array $vars
+	 * @access public
+	 *
+	 * @param  array $public_query_vars
+	 * @return array
 	 */
 	public function add_query_vars( $public_query_vars ) {
-		foreach ( $this->endpoints as $args ) {
-			if ( $args->query_var ) {
-				$public_query_vars[] = $args->query_var;
-			}
+		foreach ( array_keys( $this->query_vars ) as $var ) {
+			$public_query_vars[] = $var;
 		}
 		return $public_query_vars;
+	}
+
+	/**
+	 * Do 'template_redirect' Actions for Endpoints
+	 *
+	 * @access public
+	 */
+	public function template_redirect() {
+		global $wp_query;
+		foreach ( $this->query_vars as $var => $args ) {
+			if ( isset( $wp_query->query[$var] ) ) {
+				do_action( 'template_redirect_' . $var, $wp_query->query[$var], $args );
+				break;
+			}
+		}
 	}
 
 }

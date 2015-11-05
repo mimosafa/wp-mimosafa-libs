@@ -104,9 +104,16 @@ class Registry extends Repository\Registry {
 		$_name = $name;
 		parent::arguments( $name, $args );
 		if ( self::$prefix ) {
-			if ( ( isset( $args['publicly_queryable'] ) && $args['publicly_queryable'] )
-				|| ( isset( $args['public'] ) && $args['public'] ) )
-			{
+			if ( isset( $args['publicly_queryable'] ) ) {
+				$queryable = filter_var( $args['publicly_queryable'], \FILTER_VALIDATE_BOOLEAN );
+			}
+			else if ( isset( $args['public'] ) ) {
+				$queryable = filter_var( $args['public'], \FILTER_VALIDATE_BOOLEAN );
+			}
+			else {
+				$queryable = false;
+			}
+			if ( $queryable ) {
 				/**
 				 * Regulate Rewrite Slug
 				 */
