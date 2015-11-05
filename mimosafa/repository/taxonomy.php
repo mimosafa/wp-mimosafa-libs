@@ -15,38 +15,17 @@ namespace mimosafa\WP\Repository;
 class Taxonomy extends Repository {
 
 	/**
-	 * @var boolean
-	 */
-	protected $_builtin = false;
-
-	/**
 	 * @var array
 	 */
 	private $object_types = [];
 
 	/**
-	 * Constructor
+	 * Initialize Taxonomy
 	 *
 	 * @access protected
-	 *
-	 * @uses   mimosafa\WP\Repository\Repository::__construct()
-	 *
-	 * @param  string      $name
-	 * @param  null|string $label
-	 * @param  null|string $type
-	 * @param  array       $args
 	 */
-	protected function __construct( $name, $label, $type, Array $args ) {
-		if ( isset( self::$builtins[$name] ) ) {
-			if ( self::$builtins[$name] === 'Taxonomy' ) {
-				$this->_builtin = true;
-			}
-			else {
-				unset( self::$instances[$name] );
-				return;
-			}
-		}
-		parent::__construct( $name, $label, $type, $args );
+	protected function init_repository() {
+		add_action( 'init', [ $this, 'register' ], 0 );
 	}
 
 	/**
@@ -60,6 +39,20 @@ class Taxonomy extends Repository {
 		}
 		else {
 			if ( $this->object_types ) {
+				$filter = function( $obj ) {
+					if ( post_type_exists( $obj ) ) {
+						/**
+						 * Built-in Post Type
+						 */
+						register_taxonomy_for_object_type( $this->name, $obj );
+						return false;
+					}
+					return true;
+				};
+				$this->object_types = array_filter( $this->object_types, $filter );
+				/**
+				 * Custom Post Type
+				 */
 				add_action( 'registered_post_type', function( $post_type ) {
 					if ( in_array( $post_type, $this->object_types, true ) ) {
 						register_taxonomy_for_object_type( $this->name, $post_type );
@@ -67,23 +60,6 @@ class Taxonomy extends Repository {
 				} );
 			}
 		}
-	}
-
-	/**
-	 * Object Type(s)
-	 *
-	 * @param  string|array $object_type
-	 * @return mimosafa\WP\Repository\Taxonomy
-	 */
-	public function object_type( $object_type ) {
-		$object_type = (array) $object_type;
-		foreach ( $object_type as &$type ) {
-			if ( $instance = PostType::getInstance( $type ) ) {
-				$type = $instance->name;
-			}
-		}
-		$this->object_type = array_merge( $this->object_type, $object_type );
-		return $this;
 	}
 
 	/**
@@ -95,7 +71,7 @@ class Taxonomy extends Repository {
 	 * @return mimosafa\WP\Repository\Taxonomy
 	 */
 	public function attach( $repository ) {
-		if ( $repository = self::getRepos( $repository ) ) {
+		if ( $repository = self::getRepository( $repository ) ) {
 			if ( $repository instanceof PostType ) {
 				$name = $repository->name;
 				if ( ! in_array( $name, $this->object_types, true ) ) {

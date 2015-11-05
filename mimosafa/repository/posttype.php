@@ -15,33 +15,12 @@ namespace mimosafa\WP\Repository;
 class PostType extends Repository {
 
 	/**
-	 * @var boolean
-	 */
-	protected $_builtin = false;
-
-	/**
-	 * Constructor
+	 * Initialize Post Type
 	 *
 	 * @access protected
-	 *
-	 * @uses   mimosafa\WP\Repository\Repository::__construct()
-	 *
-	 * @param  string      $name
-	 * @param  null|string $label
-	 * @param  null|string $type
-	 * @param  array       $args
 	 */
-	protected function __construct( $name, $label, $type, Array $args ) {
-		if ( isset( self::$builtins[$name] ) ) {
-			if ( self::$builtins[$name] === 'PostType' ) {
-				$this->_builtin = true;
-			}
-			else {
-				unset( self::$instances[$name] );
-				return;
-			}
-		}
-		parent::__construct( $name, $label, $type, $args );
+	protected function init_repository() {
+		add_action( 'init', [ $this, 'register' ], 0 );
 	}
 
 	/**
@@ -64,7 +43,7 @@ class PostType extends Repository {
 	 * @return mimosafa\WP\Repository\PostType
 	 */
 	public function attach( $repository ) {
-		if ( $repository = self::getRepos( $repository ) ) {
+		if ( $repository = self::getRepository( $repository ) ) {
 			if ( $repository instanceof Taxonomy ) {
 				$repository->attach( $this->name );
 			}
