@@ -4,10 +4,13 @@ Plugin Name: WordPress Libraries by mimosafa
 Plugin Uri: https://github.com/mimosafa/wp-mimosafa-libs
 Description: Extension Libraries for WordPress
 Author: Toshimichi Mimoto
-Version: 0.0.1
 Author URI: http://mimosafa.me
+Text Domain: wp-mimosafa-libs
+Version: 0.0.1
 */
+
 define( 'WP_MIMOSAFA_LIBS_BASENAME', plugin_basename( __FILE__ ) );
+define( 'WP_MIMOSAFA_LIBS_VER', '0.0.1' );
 
 if ( _wp_mimosafa_libs_plugin_requirements() ) {
 	require_once dirname( __FILE__ ) . '/bootstrap.php';
@@ -35,11 +38,11 @@ function _wp_mimosafa_libs_plugin_requirements() {
 	$e = new WP_Error();
 
 	if ( version_compare( $current_php_ver, $required_php_ver, '<' ) ) {
-		$err_msg_format_php_ver = __( '<p>PHP version %1$s does not meet the requirements to activate <code>%2$s</code>. %3$s or higher will be required.</p>', 'wprofile' );
+		$err_msg_format_php_ver = __( '<p>PHP version %1$s does not meet the requirements to activate <code>%2$s</code>. %3$s or higher will be required.</p>', 'wp-mimosafa-libs' );
 		$e->add( 'error', sprintf( $err_msg_format_php_ver, esc_html( $current_php_ver ), WP_MIMOSAFA_LIBS_BASENAME, $required_php_ver ) );
 	}
 	if ( version_compare( $current_wp_ver, $required_wp_ver, '<' ) ) {
-		$err_msg_format_wp_ver = __( '<p>WordPress version %1$s does not meet the requirements to activate <code>%2$s</code>. %3$s or higher will be required.</p>', 'wprofile' );
+		$err_msg_format_wp_ver = __( '<p>WordPress version %1$s does not meet the requirements to activate <code>%2$s</code>. %3$s or higher will be required.</p>', 'wp-mimosafa-libs' );
 		$e->add( 'error', sprintf( $err_msg_format_wp_ver, esc_html( $current_wp_ver ), WP_MIMOSAFA_LIBS_BASENAME, $required_wp_ver ) );
 	}
 	if ( $e->get_error_code() ) {
