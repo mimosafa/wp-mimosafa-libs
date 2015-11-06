@@ -72,7 +72,7 @@ abstract class Repository implements Repos {
 	 */
 	protected static $blacklist = [
 		'revision', 'nav_menu_item',
-		'link_category', 'post_format'
+		'link_category', 'post_format', 'tag', 'type',
 	];
 
 	/**
@@ -143,6 +143,16 @@ abstract class Repository implements Repos {
 		 * Initialize Repository
 		 */
 		$this->init_repository();
+		/**
+		 * Flag for Added Filters
+		 *
+		 * @var boolean
+		 */
+		static $added_filters = false;
+		if ( ! $added_filters ) {
+			$this->add_filters();
+			$added_filters = true;
+		}
 	}
 
 	/**
@@ -267,6 +277,15 @@ abstract class Repository implements Repos {
 	protected static function isPrototype( $var ) {
 		$registry = get_called_class() . '\\Registry';
 		return isset( $registry::prototypes()[$var] );
+	}
+
+	/**
+	 * Add Filters
+	 *
+	 * @access protected
+	 */
+	protected function add_filters() {
+		//
 	}
 
 }

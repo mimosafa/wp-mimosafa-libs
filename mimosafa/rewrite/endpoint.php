@@ -30,9 +30,11 @@ class Endpoint {
 	 * @var array
 	 */
 	private static $defaults = [
-		'places'    => 0, // EP_NONE
-		'query_var' => true,
-		'rewrite'   => '',
+		'places'     => 0, // EP_NONE
+		'query_var'  => true,
+		'rewrite'    => '',
+		'position'   => 'bottom', // @todo for add_rewrite_rule
+		'query_vars' => [], // @todo
 	];
 
 	/**
@@ -73,7 +75,7 @@ class Endpoint {
 			return; // WP_Error
 		}
 		if ( ! is_int( $args->places ) || ! $args->places ) {
-			$args->places = \EP_ROOT;
+			$args->places = 0; // EP_NONE
 		}
 		if ( $args->query_var !== false ) {
 			$args->query_var = $endpoint;
@@ -93,7 +95,13 @@ class Endpoint {
 	public function add_rewrite_endpoints() {
 		if ( ! empty( $this->endpoints ) ) {
 			foreach ( $this->endpoints as $endpoint => $args ) {
+				/**
+				 * Add Rewrite Endpoint
+				 */
 				add_rewrite_endpoint( $args->rewrite, $args->places, $args->query_var );
+				/**
+				 * Query Vars
+				 */
 				if ( $args->query_var ) {
 					$this->query_vars[$args->query_var] = $args;
 				}
