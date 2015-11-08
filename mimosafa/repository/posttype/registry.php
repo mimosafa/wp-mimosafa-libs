@@ -100,7 +100,7 @@ class Registry extends Repository\Registry {
 	 * @param  string &$name # Post Type Name
 	 * @param  array  &$args # Registration Arguments for Post Type
 	 */
-	public static function arguments( &$name, Array &$args ) {
+	public static function regulation( &$name, Array &$args ) {
 		$_name = $name;
 		parent::arguments( $name, $args );
 		if ( self::$prefix ) {

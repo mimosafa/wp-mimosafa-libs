@@ -12,7 +12,7 @@ namespace mimosafa\WP\Repository;
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  */
-interface Repos
+interface RepositoryInterface
 {
 	//
 }

@@ -41,7 +41,7 @@ class Registry extends Repository\Registry {
 	 * @param  string &$name # Taxonomy Name
 	 * @param  array  &$args # Registration Arguments for Taxonomy
 	 */
-	public static function arguments( &$name, Array &$args ) {
+	public static function regulation( &$name, Array &$args ) {
 		if ( ! isset( $args['places'] ) || ! is_int( $args['places'] ) || $args['places'] < 0 ) {
 			$args['places'] = \EP_ROOT;
 		}

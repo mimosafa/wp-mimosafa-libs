@@ -12,7 +12,7 @@ namespace mimosafa\WP\Repository;
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  */
-abstract class Repository implements Repos {
+abstract class Repository implements RepositoryInterface {
 
 	/**
 	 * Object Instances (Singleton Pattern)
@@ -62,7 +62,16 @@ abstract class Repository implements Repos {
 		 * Taxonomies
 		 */
 		'category' => 'Taxonomy',
-		'post_tag' => 'Taxonomy',
+		'tag' => 'Taxonomy',
+
+		/**
+		 * Roles
+		 */
+		'administrator' => 'Role',
+		'editor' => 'Role',
+		'author' => 'Role',
+		'contributor' => 'Role',
+		'subscriber'  => 'Role',
 	];
 
 	/**
@@ -72,7 +81,7 @@ abstract class Repository implements Repos {
 	 */
 	protected static $blacklist = [
 		'revision', 'nav_menu_item',
-		'link_category', 'post_format', 'tag', 'type',
+		'link_category', 'post_format', 'post_tag', 'type',
 	];
 
 	/**
@@ -125,7 +134,7 @@ abstract class Repository implements Repos {
 			if ( $type ) {
 				$args = array_merge( $args, $registry::prototypes()[$type] );
 			}
-			call_user_func_array( [ $registry, 'arguments' ], [ &$name, &$args ] );
+			call_user_func_array( [ $registry, 'regulation' ], [ &$name, &$args ] );
 			/**
 			 * To Avoid Overwriting of Built-in/Existing Repository
 			 *
@@ -265,7 +274,7 @@ abstract class Repository implements Repos {
 				}
 			}
 		}
-		return is_object( $repository ) && $repository instanceof Repos ? $repository : null;
+		return is_object( $repository ) && $repository instanceof RepositoryInterface ? $repository : null;
 	}
 
 	/**

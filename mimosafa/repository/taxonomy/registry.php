@@ -94,7 +94,7 @@ class Registry extends Repository\Registry {
 	 * @param  string &$name # Taxonomy Name
 	 * @param  array  &$args # Registration Arguments for Taxonomy
 	 */
-	public static function arguments( &$name, Array &$args ) {
+	public static function regulation( &$name, Array &$args ) {
 		$_name = $name;
 		parent::arguments( $name, $args );
 		if ( self::$prefix ) {

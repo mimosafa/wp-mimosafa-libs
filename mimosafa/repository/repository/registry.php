@@ -98,7 +98,7 @@ abstract class Registry {
 	 * @param  string &$name # Taxonomy Name
 	 * @param  array  &$args # Registration Arguments for Taxonomy
 	 */
-	public static function arguments( &$name, Array &$args ) {
+	public static function regulation( &$name, Array &$args ) {
 		if ( ! isset( $args['label'] ) || ! filter_var( $args['label'] ) ) {
 			$args['label'] = Labels::labelize( $name );
 		}
