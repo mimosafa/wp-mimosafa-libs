@@ -96,7 +96,7 @@ class Registry extends Repository\Registry {
 	 */
 	public static function regulation( &$name, Array &$args ) {
 		$_name = $name;
-		parent::arguments( $name, $args );
+		parent::regulation( $name, $args );
 		if ( self::$prefix ) {
 			if ( strpos( $name, '-' ) ) {
 				/**
