@@ -104,14 +104,12 @@ class Registry extends Repository\Registry {
 		$_name = $name;
 		parent::regulation( $name, $args );
 		if ( self::$prefix ) {
+			$queryable = false;
 			if ( isset( $args['publicly_queryable'] ) ) {
 				$queryable = filter_var( $args['publicly_queryable'], \FILTER_VALIDATE_BOOLEAN );
 			}
 			else if ( isset( $args['public'] ) ) {
 				$queryable = filter_var( $args['public'], \FILTER_VALIDATE_BOOLEAN );
-			}
-			else {
-				$queryable = false;
 			}
 			if ( $queryable ) {
 				/**

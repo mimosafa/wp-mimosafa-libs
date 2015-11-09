@@ -80,8 +80,20 @@ abstract class Repository implements RepositoryInterface {
 	 * @var array
 	 */
 	protected static $blacklist = [
+		/**
+		 * Post Types
+		 */
 		'revision', 'nav_menu_item',
-		'link_category', 'post_format', 'post_tag', 'type',
+
+		/**
+		 * Taxonomies
+		 */
+		'link_category', 'type', 'post_format', 'post_tag',
+
+		/**
+		 * Roles
+		 */
+		'administrator',
 	];
 
 	/**
@@ -159,7 +171,12 @@ abstract class Repository implements RepositoryInterface {
 		 */
 		static $added_filters = false;
 		if ( ! $added_filters ) {
-			$this->add_filters();
+			/**
+			 * Common Filters
+			 *
+			 * @todo
+			 */
+			//
 			$added_filters = true;
 		}
 	}
@@ -175,7 +192,7 @@ abstract class Repository implements RepositoryInterface {
 	 * @param  mixed  $label, $type, $args # Variable-length arguments
 	 * @return object
 	 */
-	public static function init() {
+	public static function init( $lists ) {
 		/**
 		 * @var array {
 		 *     @type string $name
@@ -184,54 +201,52 @@ abstract class Repository implements RepositoryInterface {
 		 *     @type array  $args
 		 * }
 		 */
-		if ( $lists = func_get_args() ) {
-			$name = $lists[0];
-			if ( ! $instance = self::getInstance( $name ) ) {
-				$class = get_called_class();
-				$registry = $class . '\\Registry';
-				if ( $name = filter_var( $name, \FILTER_CALLBACK, [ 'options' => $registry . '::validateName' ] ) ) {
-					$n = count( $lists );
-					$label = $type = null;
-					$args  = [];
-					if ( $n > 1 ) {
-						for ( $i = 1; $i < 4; $i++ ) {
-							if ( isset( $lists[$i] ) ) {
-								if ( $lists[$i] ) {
-									if ( is_string( $lists[$i] ) ) {
-										if ( static::isPrototype( $lists[$i] ) ) {
-											if ( ! $type ) {
-												$type = $lists[$i];
-											} else {
-												// Error
-											}
-										}
-										else {
-											if ( ! $label ) {
-												$label = $lists[$i];
-											} else {
-												// Error
-											}
+		$lists = func_get_args();
+		$name = $lists[0];
+		if ( ! $instance = self::getInstance( $name ) ) {
+			$class = get_called_class();
+			$registry = $class . '\\Registry';
+			if ( $name = filter_var( $name, \FILTER_CALLBACK, [ 'options' => $registry . '::validateName' ] ) ) {
+				$n = count( $lists );
+				$label = $type = null;
+				$args  = [];
+				if ( $n > 1 ) {
+					for ( $i = 1; $i < 4; $i++ ) {
+						if ( isset( $lists[$i] ) ) {
+							if ( $lists[$i] ) {
+								if ( is_string( $lists[$i] ) ) {
+									if ( static::isPrototype( $lists[$i] ) ) {
+										if ( ! $type ) {
+											$type = $lists[$i];
+										} else {
+											// Error
 										}
 									}
-									else if ( is_array( $lists[$i] ) ) {
-										if ( ! $args ) {
-											$args = $lists[$i];
+									else {
+										if ( ! $label ) {
+											$label = $lists[$i];
 										} else {
 											// Error
 										}
 									}
 								}
-								continue;
+								else if ( is_array( $lists[$i] ) ) {
+									if ( ! $args ) {
+										$args = $lists[$i];
+									} else {
+										// Error
+									}
+								}
 							}
-							break;
+							continue;
 						}
+						break;
 					}
-					$instance = self::$instances[$name] = new $class( $name, $label, $type, $args );
 				}
+				$instance = self::$instances[$name] = new $class( $name, $label, $type, $args );
 			}
-			return $instance;
 		}
-		// Error
+		return $instance;
 	}
 
 	/**
@@ -278,6 +293,18 @@ abstract class Repository implements RepositoryInterface {
 	}
 
 	/**
+	 * Return Which Repository is
+	 *
+	 * @access public
+	 *
+	 * @return string PostType|Taxonomy|Role
+	 */
+	public function whitch() {
+		$class = get_called_class();
+		return substr( $class, strrpos( $class, '\\' ) + 1 );
+	}
+
+	/**
 	 * @access protected
 	 *
 	 * @param  string  $var
@@ -286,15 +313,6 @@ abstract class Repository implements RepositoryInterface {
 	protected static function isPrototype( $var ) {
 		$registry = get_called_class() . '\\Registry';
 		return isset( $registry::prototypes()[$var] );
-	}
-
-	/**
-	 * Add Filters
-	 *
-	 * @access protected
-	 */
-	protected function add_filters() {
-		//
 	}
 
 }

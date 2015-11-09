@@ -40,14 +40,31 @@ class PostType extends Repository {
 	 * @access public
 	 *
 	 * @param  string|mimosafa\Repository\Repos $repository
+	 * @param  mixed|null                       $args
 	 * @return mimosafa\WP\Repository\PostType
 	 */
-	public function attach( $repository ) {
+	public function attach( $repository, $args = null ) {
 		if ( $repository = self::getRepository( $repository ) ) {
 			if ( $repository instanceof Taxonomy ) {
+				/**
+				 * With Taxonomy
+				 */
 				$repository->attach( $this->name );
 			}
+			else if ( $repository instanceof Role ) {
+				/**
+				 * With Role
+				 */
+			}
 		}
+		return $this;
+	}
+
+	/**
+	 *
+	 */
+	public function init_caps() {
+		//
 	}
 
 }

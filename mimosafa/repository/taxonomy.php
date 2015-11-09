@@ -68,15 +68,24 @@ class Taxonomy extends Repository {
 	 * @access public
 	 *
 	 * @param  string|mimosafa\Repository\Repos $repository
+	 * @param  mixed|null                       $args
 	 * @return mimosafa\WP\Repository\Taxonomy
 	 */
-	public function attach( $repository ) {
+	public function attach( $repository, $args = null ) {
 		if ( $repository = self::getRepository( $repository ) ) {
 			if ( $repository instanceof PostType ) {
+				/**
+				 * With Post Type
+				 */
 				$name = $repository->name;
 				if ( ! in_array( $name, $this->object_types, true ) ) {
 					$this->object_types[] = $repository->name;
 				}
+			}
+			else if ( $repository instanceof Role ) {
+				/**
+				 * With Role
+				 */
 			}
 		}
 		return $this;
