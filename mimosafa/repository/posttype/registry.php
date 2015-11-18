@@ -60,6 +60,7 @@ class Registry extends Repository\Registry {
 			'capability_type' => 'post',
 			'map_meta_cap'    => true,
 			'hierarchical'    => false,
+			'has_archive'     => true,
 			'supports'        => [ 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'trackbacks', 'custom-fields', 'comments', 'revisions', 'post-formats' ],
 		],
 
@@ -71,6 +72,7 @@ class Registry extends Repository\Registry {
 			'capability_type' => 'page',
 			'map_meta_cap'    => true,
 			'hierarchical'    => true,
+			'has_archive'     => false,
 			'supports'        => [ 'title', 'editor', 'author', 'thumbnail', 'page-attributes', 'custom-fields', 'comments', 'revisions' ],
 		]
 	];
