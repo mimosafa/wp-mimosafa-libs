@@ -103,6 +103,10 @@ abstract class Repository implements RepositoryInterface {
 	 */
 	abstract protected function init_repository();
 
+	public function __set( $name, $val ) {
+		$this->args[$name] = $val;
+	}
+
 	/**
 	 * Constructor
 	 *
