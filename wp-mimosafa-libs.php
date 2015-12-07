@@ -64,6 +64,6 @@ function _wp_mimosafa_libs_plugin_requirements_error() {
 	foreach ( $_wp_mimosafa_libs_version_error_messages as $msg ) {
 		echo "<div class=\"message error notice is-dismissible\">\n\t{$msg}\n</div>\n";
 	}
-	deactivate_plugins( WP_MIMOSAFA_LIBS_BASENAME, true );
+	// deactivate_plugins( WP_MIMOSAFA_LIBS_BASENAME, true );
 	unset( $_wp_mimosafa_libs_version_error_messages );
 }
