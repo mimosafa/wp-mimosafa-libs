@@ -26,8 +26,8 @@ class Register {
 	 * @access private
 	 */
 	private function __construct() {
-		add_action( 'init', [ $this, 'register_taxonomies' ], 1 );
-		add_action( 'init', [ $this, 'register_post_types' ], 1 );
+		add_action( 'init', [ $this, 'register_taxonomies' ], 11 );
+		add_action( 'init', [ $this, 'register_post_types' ], 11 );
 	}
 
 	/**
@@ -138,7 +138,6 @@ class Register {
 				 * @var array  $args
 				 */
 				extract( $pt, EXTR_OVERWRITE );
-				PostType\Labels::init( $post_type, $args );
 
 				/**
 				 * Registered Object Type

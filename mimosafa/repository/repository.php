@@ -14,309 +14,144 @@ namespace mimosafa\WP\Repository;
  */
 abstract class Repository implements RepositoryInterface {
 
-	/**
-	 * Object Instances (Singleton Pattern)
-	 *
-	 * @var array
-	 */
 	protected static $instances = [];
-
-	/**
-	 * @var array
-	 */
 	protected static $ids = [];
 
 	/**
-	 * Repository's Name (with Prefix)
-	 *
 	 * @var string
 	 */
 	protected $name;
+	protected $id;
 
 	/**
-	 * Arguments for Registration
-	 *
 	 * @var array
 	 */
-	protected $args = [];
+	protected $args;
 
-	/**
-	 * @var boolean
-	 */
-	protected $_builtin = false;
+	protected $_builtin;
 
-	/**
-	 * WordPress Built-in Repositories
-	 *
-	 * @var array
-	 */
-	protected static $builtins = [
-		/**
-		 * Post Types
-		 */
-		'post' => 'PostType',
-		'page' => 'PostType',
-		'attachment' => 'PostType',
-
-		/**
-		 * Taxonomies
-		 */
-		'category' => 'Taxonomy',
-		'tag' => 'Taxonomy',
-
-		/**
-		 * Roles
-		 */
-		'administrator' => 'Role',
-		'editor' => 'Role',
-		'author' => 'Role',
-		'contributor' => 'Role',
-		'subscriber'  => 'Role',
-	];
-
-	/**
-	 * Black List for Repository Name
-	 *
-	 * @var array
-	 */
-	protected static $blacklist = [
-		/**
-		 * Post Types
-		 */
-		'revision', 'nav_menu_item',
-
-		/**
-		 * Taxonomies
-		 */
-		'link_category', 'type', 'post_format', 'post_tag',
-
-		/**
-		 * Roles
-		 */
-		'administrator',
-	];
-
-	/**
-	 * Abstract: Register Repository
-	 *
-	 * @access public
-	 */
-	abstract protected function init_repository();
-
-	public function __set( $name, $val ) {
-		$this->args[$name] = $val;
-	}
+	protected static $builtins = [];
 
 	/**
 	 * Constructor
 	 *
 	 * @access protected
 	 *
-	 * @uses   mimosafa\WP\Repository\{PostType|Taxonomy}\Registry
-	 *
-	 * @param  string      $name
-	 * @param  null|string $label
-	 * @param  null|string $type
-	 * @param  array       $args
+	 * @param  string $name
+	 * @param  string $id
+	 * @param  array  $args
 	 */
-	protected function __construct( $name, $label, $type, Array $args ) {
-		$id = $name;
-		if ( in_array( $name, self::$blacklist, true ) ) {
+	protected function __construct( $name, $id, Array $args, $builtin ) {
+		$this->name = $name;
+		$this->id   = $id;
+		$this->args = $args;
+		$this->_builtin = $builtin;
+		static::$ids[$name] = $id;
+	}
+
+	/**
+	 * Instance initializer
+	 *
+	 * @access public
+	 *
+	 * @param  string        $name
+	 * @param  string        $id    Optional
+	 * @param  array|string  $args  Optional
+	 * @return mimosafa\WP\Repository\RepositoryInterface|null
+	 */
+	public static function init( $name, $id = null, $args = [] ) {
+		if ( filter_var( $name ) && isset( static::$instances[$name] ) ) {
 			/**
-			 * Black List
+			 * If instance is already existing, Do nothing.
 			 */
-			unset( self::$instances[$id] );
-			return;
+			return null;
 		}
-		if ( isset( self::$builtins[$name] ) ) {
+		$builtin = false;
+		if ( isset( static::$builtins[$name] ) ) {
 			/**
-			 * Built-ins
+			 * If built-in, the ID is defined.
 			 */
-			$maybe = __NAMESPACE__ . '\\' . self::$builtins[$name];
-			if ( $maybe !== get_called_class() ) {
-				unset( self::$instances[$id] );
-				return;
+			$id = static::$builtins[$name];
+			$builtin = true;
+		}
+		else if ( static::validateStrings( $name, $id ) ) {
+			if ( in_array( $name, static::$ids, true ) ) {
+				/**
+				 * The name same as an existing ID is not allowed.
+				 */
+				return null;
 			}
-			$this->_builtin = true;
+			if ( isset( static::$ids[$id] ) ) {
+				/**
+				 * The ID same as an existing name is not allowed
+				 */
+				return null;
+			}
+			if ( in_array( $id, static::$builtins, true ) ) {
+				/**
+				 * If not built-in, the ID same as an built-in is not allowed.
+				 */
+				return null;
+			}
 		}
 		else {
 			/**
-			 * Custom Repository
+			 * Invalid name|ID string
 			 */
-			if ( $label ) {
-				$args['label'] = $label;
-			}
-			$registry = get_called_class() . '\\Registry';
-			if ( $type ) {
-				$args = array_merge( $args, $registry::prototypes()[$type] );
-			}
-			call_user_func_array( [ $registry, 'regulation' ], [ &$name, &$args ] );
-			/**
-			 * To Avoid Overwriting of Built-in/Existing Repository
-			 *
-			 * @var string $name # Repository's System Registered Name
-			 */
-			if ( in_array( $name, self::$ids, true ) || isset( self::$builtins[$name] ) || in_array( $name, self::$blacklist, true ) ) {
-				unset( self::$instances[$id] );
-				return;
-			}
-			$this->args = $args;
+			return null;
 		}
-		$this->name = $name;
-		self::$ids[$name] = $id;
-		/**
-		 * Initialize Repository
-		 */
-		$this->init_repository();
-		/**
-		 * Flag for Added Filters
-		 *
-		 * @var boolean
-		 */
-		static $added_filters = false;
-		if ( ! $added_filters ) {
-			/**
-			 * Common Filters
-			 *
-			 * @todo
-			 */
-			//
-			$added_filters = true;
-		}
+		$args = wp_parse_args( $args );
+		return static::$instances[$name] = new static( $name, $id, $args, $builtin );
 	}
 
 	/**
-	 * Initialize & Return Instance
-	 *
-	 * @access public
-	 *
-	 * @uses   mimosafa\WP\Repository\{PostType|Taxonomy}\Registry
-	 *
-	 * @param  string $name
-	 * @param  mixed  $label, $type, $args # Variable-length arguments
-	 * @return object
-	 */
-	public static function init( $lists ) {
-		/**
-		 * @var array {
-		 *     @type string $name
-		 *     @type string $label
-		 *     @type string $type
-		 *     @type array  $args
-		 * }
-		 */
-		$lists = func_get_args();
-		$name = $lists[0];
-		if ( ! $instance = self::getInstance( $name ) ) {
-			$class = get_called_class();
-			$registry = $class . '\\Registry';
-			if ( $name = filter_var( $name, \FILTER_CALLBACK, [ 'options' => $registry . '::validateName' ] ) ) {
-				$n = count( $lists );
-				$label = $type = null;
-				$args  = [];
-				if ( $n > 1 ) {
-					for ( $i = 1; $i < 4; $i++ ) {
-						if ( isset( $lists[$i] ) ) {
-							if ( $lists[$i] ) {
-								if ( is_string( $lists[$i] ) ) {
-									if ( static::isPrototype( $lists[$i] ) ) {
-										if ( ! $type ) {
-											$type = $lists[$i];
-										} else {
-											// Error
-										}
-									}
-									else {
-										if ( ! $label ) {
-											$label = $lists[$i];
-										} else {
-											// Error
-										}
-									}
-								}
-								else if ( is_array( $lists[$i] ) ) {
-									if ( ! $args ) {
-										$args = $lists[$i];
-									} else {
-										// Error
-									}
-								}
-							}
-							continue;
-						}
-						break;
-					}
-				}
-				$instance = self::$instances[$name] = new $class( $name, $label, $type, $args );
-			}
-		}
-		return $instance;
-	}
-
-	/**
-	 * Return Initialized Instance
+	 * Existing Instance Getter
 	 *
 	 * @access public
 	 *
 	 * @param  string $name
-	 * @return mimosafa\WP\Repository\Repos|null
+	 * @return mimosafa\WP\Repository\RepositoryInterface|null
 	 */
 	public static function getInstance( $name ) {
-		if ( ( $name = filter_var( $name ) ) && isset( self::$instances[$name] ) ) {
-			$class = get_called_class();
-			if ( $class === __CLASS__ || self::$instances[$name] instanceof $class ) {
-				return self::$instances[$name];
-			}
-		}
-		return null;
+		return filter_var( $name ) && isset( static::$instances[$name] ) ? static::$instances[$name] : null;
 	}
 
 	/**
+	 * Validate Name|ID String
+	 *
 	 * @access protected
 	 *
-	 * @param  string|mimosafa\WP\Repository\Repos $repository
-	 * @return mimosafa\WP\Repository\Repos|null
-	 */
-	protected static function getRepository( $repository ) {
-		if ( is_string( $repository ) ) {
-			if ( isset( self::$instances[$repository] ) ) {
-				$repository = self::$instances[$repository];
-			}
-			else if ( isset( self::$ids[$repository] ) ) {
-				$repository = self::$instances[self::$ids[$repository]];
-			}
-			else if ( isset( self::$builtins[$repository] ) ) {
-				$class = __NAMESPACE__ . '\\' . self::$builtins[$repository];
-				if ( class_exists( $class ) ) {
-					$init = $class . '::init';
-					$repository = call_user_func( $init, $repository );
-				}
-			}
-		}
-		return is_object( $repository ) && $repository instanceof RepositoryInterface ? $repository : null;
-	}
-
-	/**
-	 * Return Which Repository is
-	 *
-	 * @access public
-	 *
-	 * @return string PostType|Taxonomy|Role
-	 */
-	public function whitch() {
-		$class = get_called_class();
-		return substr( $class, strrpos( $class, '\\' ) + 1 );
-	}
-
-	/**
-	 * @access protected
-	 *
-	 * @param  string  $var
+	 * @param  string $name
+	 * @param  string &$id
 	 * @return boolean
 	 */
-	protected static function isPrototype( $var ) {
-		$registry = get_called_class() . '\\Registry';
-		return isset( $registry::prototypes()[$var] );
+	protected static function validateStrings( $name, &$id ) {
+		if ( $name = self::validateID( $name ) ) {
+			$id = isset( $id ) ? filter_var( $id, \FILTER_CALLBACK, [ 'options' => get_called_class() . '::validateID' ] ) : $name;
+			return !! $id;
+		}
+		return false;
+	}
+
+	/**
+	 * Validate ID String
+	 *
+	 * @access protected
+	 *
+	 * @param  string $id
+	 * @return string|null
+	 */
+	protected static function validateID( $id ) {
+		return ! is_array( $id ) && ! is_object( $id ) && $id && $id === sanitize_key( $id ) ? $id : null;
+	}
+
+	/**
+	 * Labelize
+	 *
+	 * @access protected
+	 */
+	protected static function labelize( $string ) {
+		return ucwords( str_replace( [ '-', '_' ], ' ', $string ) );
 	}
 
 }
