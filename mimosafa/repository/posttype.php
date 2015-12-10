@@ -179,6 +179,9 @@ class PostType extends Rewritable {
 		if ( is_array( $description ) || is_object( $description ) ) {
 			$description = '';
 		}
+		if ( ! is_array( $taxonomies ) ) {
+			$taxonomies = [];
+		}
 		if ( isset( $register_meta_box_cb ) ) {
 			if ( ! is_string( $register_meta_box_cb ) || ! preg_match( '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $register_meta_box_cb ) ) {
 				$register_meta_box_cb = null;
@@ -200,7 +203,7 @@ class PostType extends Rewritable {
 			} else {
 				$rewrite = false;
 			}
-			$query_var = filter_var( $rewrite, \FILTER_VALIDATE_BOOLEAN );
+			$query_var = filter_var( $query_var, \FILTER_VALIDATE_BOOLEAN );
 		} else {
 			$rewrite = $query_var = false;
 		}

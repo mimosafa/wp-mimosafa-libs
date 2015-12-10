@@ -54,6 +54,40 @@ class Taxonomy extends Rewritable {
 		'ep_mask'      => EP_NONE
 	];
 
+	protected static $labels_defaults = [
+		'name'          => [ 'plural',   [ '%s', 'taxonomy general name' ] ],
+		'singular_name' => [ 'singular', [ '%s', 'taxonomy singular name' ] ],
+		'search_items'  => [ 'plural',   'Search %s' ],
+		'all_items'     => [ 'plural',   'All %s' ],
+		'edit_item'     => [ 'singular', 'Edit %s' ],
+		'view_item'     => [ 'singular', 'View %s' ],
+		'update_item'   => [ 'singular', 'Update %s' ],
+		'add_new_item'  => [ 'singular', 'Add New %s' ],
+		'new_item_name' => [ 'singular', 'New %s Name' ],
+		'not_found'     => [ 'plural',   'No %s found.' ],
+		'no_terms'      => [ 'plural',   'No %s' ],
+	];
+	/**
+	 * No Hierarchical Taxonomy Label
+	 *
+	 * @var array
+	 */
+	protected static $labels_nohier = [
+		'popular_items'              => [ 'singular', 'Popular %s' ],
+		'separate_items_with_commas' => [ 'plural',   'Separate %s with commas' ],
+		'add_or_remove_items'        => [ 'plural',   'Add or remove %s' ],
+		'choose_from_most_used'      => [ 'plural',   'Choose from the most used %s' ],
+	];
+	/**
+	 * Hierarchical Taxonomy Label
+	 *
+	 * @var array
+	 */
+	protected static $labels_hier = [
+		'parent_item'       => [ 'singular', 'Parent %s' ],
+		'parent_item_colon' => [ 'singular', 'Parent %s:' ],
+	];
+
 	/**
 	 * Object types
 	 *
@@ -116,7 +150,7 @@ class Taxonomy extends Rewritable {
 	public function regulate() {
 		$this->args = wp_parse_args( $this->args, static::$defaults );
 		/**
-		  @var array          $labels
+		 * @var array          $labels
 		 * @var string         $description
 		 * @var boolean        $public
 		 * @var boolean        $hierarchical
@@ -186,6 +220,16 @@ class Taxonomy extends Rewritable {
 		} else {
 			$rewrite = $query_var = false;
 		}
+		if ( ! is_array( $labels ) ) {
+			$labels = [];
+		}
+		if ( ! isset( $labels['name'] ) || ! filter_var( $labels['name'] ) ) {
+			$labels['name'] = isset( $label ) && filter_var( $label ) ? $label : self::labelize( $this->name );
+		}
+		if ( ! isset( $labels['singular_name'] ) || ! filter_var( $labels['singular_name'] ) ) {
+			$labels['singular_name'] = $labels['name'];
+		}
+		self::createLabels( $labels, $hierarchical );
 
 		/**
 		 * Compact the regulated arguments.
@@ -196,6 +240,40 @@ class Taxonomy extends Rewritable {
 		 * Cache for registration.
 		 */
 		self::$taxonomies[] = [ 'taxonomy' => $this->id, 'object_type' => $this->object_type, 'args' => $this->args ];
+	}
+
+	/**
+	 * Create taxonomy labels.
+	 *
+	 * @access private
+	 *
+	 * @param  array   &$labels
+	 * @param  boolean $hier
+	 */
+	private static function createLabels( &$labels, $hier ) {
+		$formats = self::$labels_defaults;
+		$formats = $formats + ( $hier ? self::$labels_hier : self::$labels_hier );
+		foreach ( $formats as $key => $format ) {
+			if ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) {
+				$str = '';
+				if ( is_array( $format ) ) {
+					if ( $format[0] === 'plural' ) {
+						$str = $labels['name'];
+					}
+					else if ( $format[0] === 'singular' ) {
+						$str = $labels['singular_name'];
+					}
+					if ( is_array( $format[1] ) ) {
+						$f = _x( $format[1][0], $format[1][1], 'wp-mimosafa-libs' );
+					} else {
+						$f = __( $format[1], 'wp-mimosafa-libs' );
+					}
+					if ( $str && $f ) {
+						$labels[$key] = sprintf( $f, $str );
+					}
+				}
+			}
+		}
 	}
 
 }

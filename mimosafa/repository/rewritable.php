@@ -42,8 +42,18 @@ abstract class Rewritable extends Repository {
 				 * @var array  $args
 				 */
 				extract( $tx, EXTR_OVERWRITE );
-				//
+
 				register_taxonomy( $taxonomy, $object_type, $args );
+				/**
+				 * Built-in object types
+				 */
+				if ( $object_type ) {
+					foreach ( (array) $object_type as $object ) {
+						if ( post_type_exists( $object ) ) {
+							register_taxonomy_for_object_type( $taxonomy, $object );
+						}
+					}
+				}
 			}
 		}
 	}
@@ -74,7 +84,33 @@ abstract class Rewritable extends Repository {
 				 * @var array  $args
 				 */
 				extract( $pt, EXTR_OVERWRITE );
-
+				/**
+				 * Taxonomies
+				 */
+				if ( self::$taxonomies ) {
+					$taxonomies = [];
+					foreach ( self::$taxonomies as $tx ) {
+						if ( in_array( $post_type, $tx['object_type'], true ) ) {
+							$taxonomies[] = $tx['taxonomy'];
+						}
+					}
+					if ( $taxonomies ) {
+						if ( ! isset( $args['taxonomies'] ) || ! is_array( $args['taxonomies'] ) ) {
+							$args['taxonomies'] = array_unique( array_merge( $args['taxonomies'], $taxonomies ) );
+						}
+					}
+				}
+				/**
+				 * Theme supports.
+				 */
+				if ( ! $thumbnail_supported && isset( $args['supports'] ) && in_array( 'thumbnail', (array) $args['supports'], true ) ) {
+					add_theme_support( 'post-thumbnails' );
+					$thumbnail_supported = true;
+				}
+				if ( ! $post_formats_supported && isset( $args['supports'] ) && in_array( 'post-formats', (array) $args['supports'], true ) ) {
+					add_theme_support( 'post-formats' );
+					$post_formats_supported = true;
+				}
 				register_post_type( $post_type, $args );
 			}
 		}
