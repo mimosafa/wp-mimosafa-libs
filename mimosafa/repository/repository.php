@@ -12,10 +12,11 @@ namespace mimosafa\WP\Repository;
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  */
-abstract class Repository implements RepositoryInterface {
+abstract class Repository implements RepositoryRepository {
 
 	protected static $instances = [];
 	protected static $ids = [];
+	protected static $builtins = [];
 
 	/**
 	 * @var string
@@ -28,9 +29,10 @@ abstract class Repository implements RepositoryInterface {
 	 */
 	protected $args;
 
+	/**
+	 * @var boolean
+	 */
 	protected $_builtin;
-
-	protected static $builtins = [];
 
 	/**
 	 * Constructor
@@ -47,6 +49,15 @@ abstract class Repository implements RepositoryInterface {
 		$this->args = $args;
 		$this->_builtin = $builtin;
 		static::$ids[$name] = $id;
+	}
+
+	/**
+	 * Parameter setter.
+	 *
+	 * @access public
+	 */
+	public function __set( $name, $value ) {
+		$this->args[$name] = $value;
 	}
 
 	/**
@@ -127,7 +138,7 @@ abstract class Repository implements RepositoryInterface {
 	 */
 	protected static function validateStrings( $name, &$id ) {
 		if ( $name = self::validateID( $name ) ) {
-			$id = isset( $id ) ? filter_var( $id, \FILTER_CALLBACK, [ 'options' => get_called_class() . '::validateID' ] ) : $name;
+			$id = isset( $id ) && $id ? filter_var( $id, \FILTER_CALLBACK, [ 'options' => get_called_class() . '::validateID' ] ) : $name;
 			return !! $id;
 		}
 		return false;
@@ -149,6 +160,9 @@ abstract class Repository implements RepositoryInterface {
 	 * Labelize
 	 *
 	 * @access protected
+	 *
+	 * @param  string $string
+	 * @return string
 	 */
 	protected static function labelize( $string ) {
 		return ucwords( str_replace( [ '-', '_' ], ' ', $string ) );
