@@ -1,7 +1,7 @@
 <?php
-namespace mimosafa\WP\Repository\Taxonomy;
+namespace mimosafa\WP\Repository;
 /**
- * Taxonomy Capabilities
+ * Interface of Repository
  *
  * @access private
  *
@@ -12,7 +12,7 @@ namespace mimosafa\WP\Repository\Taxonomy;
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  */
-class Capabilities {
+interface RepositoryRepository {
 
 	//
 
