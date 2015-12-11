@@ -1,7 +1,7 @@
 <?php
 namespace mimosafa\WP\Repository;
 /**
- * Taxonomy Definition Class
+ * Taxonomy Repository Class
  *
  * @access public
  *
