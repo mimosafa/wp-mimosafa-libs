@@ -49,6 +49,11 @@ abstract class Repository implements RepositoryRepository {
 		$this->args = $args;
 		$this->_builtin = $builtin;
 		static::$ids[$name] = $id;
+		static $done;
+		if ( ! $done ) {
+			\mimosafa\WP\Router::instance();
+			$done = true;
+		}
 	}
 
 	/**
@@ -58,6 +63,10 @@ abstract class Repository implements RepositoryRepository {
 	 */
 	public function __set( $name, $value ) {
 		$this->args[$name] = $value;
+	}
+
+	public function __get( $name ) {
+		return in_array( $name, [ 'name', 'id' ] ) ? $this->$name : null;
 	}
 
 	/**

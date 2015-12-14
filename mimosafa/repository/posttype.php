@@ -14,6 +14,8 @@ namespace mimosafa\WP\Repository;
  */
 class PostType extends Rewritable {
 
+	protected $value_objects = [];
+
 	/**
 	 * WordPress built-in post types
 	 *
@@ -90,6 +92,16 @@ class PostType extends Rewritable {
 		'remove_featured_image' => [ 'fi', 'Remove %s' ],
 		'use_featured_image'    => [ 'fi', 'Use as %s' ]
 	];
+
+	public function add_value_object( $name, $model = 'meta', $sanitize = null ) {
+		$class = '\\mimosafa\\WP\\ValueObject\\Post\\' . $model;
+		if ( class_exists( $class ) ) {
+			$object = $class::create( $name, $this->id, $sanitize );
+			if ( $object ) {
+				return $this->value_objects[$name] = $object;
+			}
+		}
+	}
 
 	/**
 	 * Validate ID string for post type name.
