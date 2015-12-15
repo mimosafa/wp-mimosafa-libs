@@ -3,8 +3,6 @@ namespace mimosafa\WP;
 
 class Router {
 
-	private $query_vars = [];
-
 	public static function instance() {
 		static $instance;
 		return $instance ?: $instance = new self();
@@ -22,11 +20,10 @@ class Router {
 
 	public function load_post() {
 		global $pagenow, $typenow;
-		if ( $pagenow === 'edit.php' ) {
-			Admin\Page\Edit::load( $typenow );
-		}
-		else {
-			Admin\Page\Post::load( $typenow );
+		if ( $repository = Repository\PostType::getInstance( $typenow ) ) {
+			$class = $pagenow === 'edit.php' ? '\\Admin\\Page\\Edit' : '\\Admin\\Page\\Post';
+			$class = __NAMESPACE__ . $class;
+			$class::init( $repository->value_objects );
 		}
 	}
 

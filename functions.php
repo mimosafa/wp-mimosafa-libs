@@ -49,7 +49,7 @@ if ( ! function_exists( 'mimosafa_repository_instance' ) ) {
 					}
 					return $instance;
 				}
-				return $class::init( $name, $id, $args );
+				return $class::create( $name, $id, $args );
 			}
 		}
 	}

@@ -135,7 +135,7 @@ class Taxonomy extends Rewritable {
 			 *
 			 * @see http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
 			 */
-			if ( strlen( self::$prefix . $id ) > 32 || @preg_match( '/[0-9]\-/', $id ) ) {
+			if ( strlen( $id ) > 32 || @preg_match( '/[0-9]\-/', $id ) ) {
 				$id = null;
 			}
 		}

@@ -15,6 +15,7 @@ namespace mimosafa\WP\Repository;
 class PostType extends Rewritable {
 
 	protected $value_objects = [];
+	protected static $_value_object_namespace = '\\mimosafa\\WP\\ValueObject\\Post\\';
 
 	/**
 	 * WordPress built-in post types
@@ -93,13 +94,20 @@ class PostType extends Rewritable {
 		'use_featured_image'    => [ 'fi', 'Use as %s' ]
 	];
 
-	public function add_value_object( $name, $model = 'meta', $sanitize = null ) {
-		$class = '\\mimosafa\\WP\\ValueObject\\Post\\' . $model;
-		if ( class_exists( $class ) ) {
-			$object = $class::create( $name, $this->id, $sanitize );
-			if ( $object ) {
-				return $this->value_objects[$name] = $object;
-			}
+	/**
+	 * Set value object.
+	 *
+	 * @access public
+	 *
+	 * @param  string       $name
+	 * @param  array|string $args
+	 */
+	public function add_value_object( $name, $args = [] ) {
+		$args = wp_parse_args( $args, [ 'model' => 'metadata' ] );
+		$class = static::$_value_object_namespace . filter_var( $args['model'] );
+		unset( $args['model'] );
+		if ( class_exists( $class ) && $object = $class::create( $this, $name, $args ) ) {
+			$this->value_objects[$name] = $object;
 		}
 	}
 
@@ -126,6 +134,9 @@ class PostType extends Rewritable {
 	 * @access public
 	 */
 	public function regulate() {
+		if ( post_type_exists( $this->id ) ) {
+			return;
+		}
 		$this->args = wp_parse_args( $this->args, static::$defaults );
 		/**
 		 * @var array          $labels

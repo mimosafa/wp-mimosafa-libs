@@ -14,14 +14,39 @@ namespace mimosafa\WP\Repository;
  */
 abstract class Repository implements RepositoryRepository {
 
+	/**
+	 * Repository instances.
+	 *
+	 * @var array {
+	 *     @type mimosafa\WP\Repository\RepositoryRepository ${$name}
+	 * }
+	 */
 	protected static $instances = [];
+
+	/**
+	 * Cache of initialized repository ids & names.
+	 *
+	 * @var array {
+	 *     @type string ${$id} # Repository name string.
+	 * }
+	 */
 	protected static $ids = [];
+
+	/**
+	 * WordPress built-in repositories.
+	 *
+	 * @var array
+	 */
 	protected static $builtins = [];
 
 	/**
 	 * @var string
 	 */
 	protected $name;
+
+	/**
+	 * @var string
+	 */
 	protected $id;
 
 	/**
@@ -48,7 +73,7 @@ abstract class Repository implements RepositoryRepository {
 		$this->id   = $id;
 		$this->args = $args;
 		$this->_builtin = $builtin;
-		static::$ids[$name] = $id;
+		static::$ids[$id] = $name;
 		static $done;
 		if ( ! $done ) {
 			\mimosafa\WP\Router::instance();
@@ -66,7 +91,7 @@ abstract class Repository implements RepositoryRepository {
 	}
 
 	public function __get( $name ) {
-		return in_array( $name, [ 'name', 'id' ] ) ? $this->$name : null;
+		return in_array( $name, [ 'name', 'id', 'value_objects' ] ) ? $this->$name : null;
 	}
 
 	/**
@@ -79,7 +104,7 @@ abstract class Repository implements RepositoryRepository {
 	 * @param  array|string  $args  Optional
 	 * @return mimosafa\WP\Repository\RepositoryInterface|null
 	 */
-	public static function init( $name, $id = null, $args = [] ) {
+	public static function create( $name, $id = null, $args = [] ) {
 		if ( filter_var( $name ) && isset( static::$instances[$name] ) ) {
 			/**
 			 * If instance is already existing, Do nothing.
@@ -95,13 +120,13 @@ abstract class Repository implements RepositoryRepository {
 			$builtin = true;
 		}
 		else if ( static::validateStrings( $name, $id ) ) {
-			if ( in_array( $name, static::$ids, true ) ) {
+			if ( isset( static::$ids[$name] ) ) {
 				/**
 				 * The name same as an existing ID is not allowed.
 				 */
 				return null;
 			}
-			if ( isset( static::$ids[$id] ) ) {
+			if ( in_array( $id, static::$ids, true ) ) {
 				/**
 				 * The ID same as an existing name is not allowed
 				 */
@@ -133,7 +158,30 @@ abstract class Repository implements RepositoryRepository {
 	 * @return mimosafa\WP\Repository\RepositoryInterface|null
 	 */
 	public static function getInstance( $name ) {
-		return filter_var( $name ) && isset( static::$instances[$name] ) ? static::$instances[$name] : null;
+		if ( filter_var( $name ) ) {
+			if ( isset( static::$instances[$name] ) ) {
+				return static::$instances[$name];
+			}
+			if ( isset( static::$ids[$name] ) ) {
+				return self::getInstance( static::$ids[$name] );
+			}
+		}
+	}
+
+	public static function getRepository( $repository ) {
+		if ( is_string( $repository ) && $repository ) {
+			if ( ! $repository = self::getInstance( $repository ) ) {
+				$class = get_called_class();
+				if ( isset( static::$builtins[$repository] ) ) {
+					$repository = $class::create( $repository );
+				}
+				else if ( in_array( $repository, static::$builtins, true ) ) {
+					$name = array_search( $repository, static::$builtins );
+					$repository = $class::create( $name );
+				}
+			}
+		}
+		return is_object( $repository ) && $repository instanceof RepositoryRepository ? $repository : null;
 	}
 
 	/**
