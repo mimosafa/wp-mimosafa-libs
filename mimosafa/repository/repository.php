@@ -74,11 +74,6 @@ abstract class Repository implements RepositoryRepository {
 		$this->args = $args;
 		$this->_builtin = $builtin;
 		static::$ids[$id] = $name;
-		static $done;
-		if ( ! $done ) {
-			\mimosafa\WP\Router::instance();
-			$done = true;
-		}
 	}
 
 	/**
@@ -105,7 +100,7 @@ abstract class Repository implements RepositoryRepository {
 	 * @return mimosafa\WP\Repository\RepositoryInterface|null
 	 */
 	public static function create( $name, $id = null, $args = [] ) {
-		if ( filter_var( $name ) && isset( static::$instances[$name] ) ) {
+		if ( ! filter_var( $name ) || isset( static::$instances[$name] ) ) {
 			/**
 			 * If instance is already existing, Do nothing.
 			 */
