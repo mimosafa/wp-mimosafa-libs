@@ -4,9 +4,11 @@ use mimosafa\WP\Repository;
 
 abstract class Post extends ValueObject {
 
+	protected static $map = [];
+
 	public static function create( $repository, $name, $args = [] ) {
-		if ( is_object( $repository ) && $repository instanceof Repository\RepositoryRepository ) {
-			return new static( $name, $repository->id, $args );
+		if ( is_object( $repository ) && $repository instanceof Repository\PostType ) {
+			return parent::create( $repository->id, $name, $args );
 		}
 		if ( is_string( $repository ) && $repository ) {
 			if ( $instance = Repository\PostType::create( $repository ) ) {

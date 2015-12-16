@@ -24,6 +24,7 @@ abstract class ValueObject implements ValueObjectValueObject {
 	protected $args;
 
 	protected static $defaults = [];
+	protected static $map = [];
 
 	abstract public function regulate();
 
@@ -40,7 +41,15 @@ abstract class ValueObject implements ValueObjectValueObject {
 		$this->name = $name;
 		$this->repository_id = $repository_id;
 		$this->args = $args;
-		add_action( 'init', [ $this, 'regulate' ], 20 );
+		add_action( 'init', [ $this, 'init' ], 20 );
+	}
+
+	public function init() {
+		$this->regulate();
+		if ( ! isset( static::$map[$this->repository_id] ) ) {
+			static::$map[$this->repository_id] = [];
+		}
+		static::$map[$this->repository_id][$this->name] = $this->args;
 	}
 
 	/**
@@ -57,6 +66,10 @@ abstract class ValueObject implements ValueObjectValueObject {
 		if ( filter_var( $repository_id ) && filter_var( $name ) && $name === sanitize_key( $name ) ) {
 			return new static( $name, $repository_id, $args );
 		}
+	}
+
+	public function to_array() {
+		return array_merge( $this->args, [ 'name' => $this->name ] );
 	}
 
 	/**
