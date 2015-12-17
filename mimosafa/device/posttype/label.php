@@ -35,10 +35,23 @@ abstract class Label {
 		'items_list'            => '%s list',
 	];
 
+	/**
+	 * @var array
+	 */
 	protected static $custom_labels = [
 		'enter_title_here' => false,
 	];
 
+	/**
+	 * Label generator
+	 *
+	 * @access public
+	 *
+	 * @param  string $key
+	 * @param  string $string
+	 * @param  string $text_domain
+	 * @return string
+	 */
 	public static function generate( $key, $string, $text_domain = null ) {
 		if ( filter_var( $key ) && filter_var( $string ) ) {
 			if ( isset( static::$formats[$key] ) ) {
@@ -50,6 +63,13 @@ abstract class Label {
 		return false;
 	}
 
+	/**
+	 * Expand labels
+	 *
+	 * @access public
+	 *
+	 * @param  string $key
+	 */
 	public static function expand( $key ) {
 		if ( isset( static::$custom_labels[$key] ) && ! static::$custom_labels[$key] ) {
 			switch ( $key ) {

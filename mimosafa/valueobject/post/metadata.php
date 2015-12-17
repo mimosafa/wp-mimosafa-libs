@@ -2,7 +2,7 @@
 namespace mimosafa\WP\ValueObject\Post;
 use mimosafa\WP\ValueObject;
 
-class MetaData extends ValueObject\Post {
+class Metadata extends ValueObject\Post {
 
 	protected static $meta_type = 'post';
 

@@ -68,7 +68,7 @@ class PostType extends Rewritable {
 	];
 
 	/**
-	 * Label formats
+	 * Label formats.
 	 *
 	 * @var array
 	 * @see mimosafa\WP\Device\PostType\Label
@@ -126,19 +126,10 @@ class PostType extends Rewritable {
 	 * @access public
 	 */
 	public function __set( $name, $value ) {
-		if ( array_key_exists( $name, self::$label_keys ) && filter_var( $value ) ) {
-			/**
-			 * Set labels
-			 */
-			if ( ! is_array( $this->args['labels'] ) ) {
-				$this->args['labels'] = [];
-			}
-			$this->args['labels'][$name] = esc_html( $value );
-		}
-		else if ( $name === 'support' ) {
-			/**
-			 * Set post type supports.
-			 */
+		/**
+		 * Set post type supports.
+		 */
+		if ( $name === 'support' ) {
 			if ( in_array( $value, self::$supports, true ) ) {
 				if ( is_string( $this->args['supports'] ) ) {
 					$this->args['supports'] = preg_split( '/[\s,]+/', $this->args['supports'] );
@@ -149,6 +140,24 @@ class PostType extends Rewritable {
 					}
 				}
 			}
+		}
+		/**
+		 * Set rewrite arguments.
+		 */
+		else if ( array_key_exists( $name, self::$rewrite_defaults ) ) {
+			if ( ! is_array( $this->args['rewrite'] ) ) {
+				$this->args['rewrite'] = [];
+			}
+			$this->args['rewrite'][$name] = $value;
+		}
+		/**
+		 * Set labels.
+		 */
+		else if ( array_key_exists( $name, self::$label_keys ) && filter_var( $value ) ) {
+			if ( ! is_array( $this->args['labels'] ) ) {
+				$this->args['labels'] = [];
+			}
+			$this->args['labels'][$name] = esc_html( $value );
 		}
 		else {
 			parent::__set( $name, $value );
@@ -346,7 +355,9 @@ class PostType extends Rewritable {
 		$featured_image = isset( $labels['featured_image'] ) && filter_var( $labels['featured_image'] ) ? $labels['featured_image'] : null;
 		foreach ( self::$label_keys as $key => $context ) {
 			if ( $context && ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) ) {
-				$labels[$key] = Device\PostType\Label::generate( $key, ${$context} );
+				if ( $string = ${$context} ) {
+					$labels[$key] = Device\PostType\Label::generate( $key, $string );
+				}
 			}
 		}
 		foreach ( array_keys( $labels ) as $label_key ) {
