@@ -1,5 +1,6 @@
 <?php
 namespace mimosafa\WP\Repository;
+use mimosafa\WP\Device;
 /**
  * Post Type Repository Class
  *
@@ -33,7 +34,7 @@ class PostType extends Rewritable {
 	 *
 	 * @var array
 	 */
-	private static $defaults = [
+	protected static $defaults = [
 		'labels'               => [],
 		'description'          => '',
 		'public'               => false,
@@ -70,29 +71,89 @@ class PostType extends Rewritable {
 	 * Label formats
 	 *
 	 * @var array
+	 * @see mimosafa\WP\Device\PostType\Label
 	 */
-	protected static $labels_defaults = [
-		'name'               => [ 'plural',   [ '%s', 'post type general name' ] ],
-		'singular_name'      => [ 'singular', [ '%s', 'post type singular name' ] ],
-		'add_new'            => 'Add New',
-		'add_new_item'       => [ 'singular', 'Add New %s' ],
-		'edit_item'          => [ 'singular', 'Edit %s' ],
-		'new_item'           => [ 'singular', 'New %s' ],
-		'view_item'          => [ 'singular', 'View %s' ],
-		'search_items'       => [ 'plural',   'Search %s' ],
-		'not_found'          => [ 'plural',   'No %s found.' ],
-		'not_found_in_trash' => [ 'plural',   'No %s found in Trash.' ],
-		'all_items'          => [ 'plural',   'All %s' ],
+	protected static $label_keys = [
+		'name'                  => null,
+		'singular_name'         => null,
+		'add_new'               => null,
+		'add_new_item'          => 'singular',
+		'edit_item'             => 'singular',
+		'new_item'              => 'singular',
+		'view_item'             => 'singular',
+		'search_items'          => 'plural',
+		'not_found'             => 'plural',
+		'not_found_in_trash'    => 'plural',
+		'all_items'             => 'plural',
+		'parent_item_colon'     => 'singular',
+		'uploaded_to_this_item' => 'singular',
+		'featured_image'        => null,
+		'set_featured_image'    => 'featured_image',
+		'remove_featured_image' => 'featured_image',
+		'use_featured_image'    => 'featured_image',
+		'archives'              => 'singular',
+		'insert_into_item'      => 'singular',
+		'filter_items_list'     => 'plural',
+		'items_list_navigation' => 'plural',
+		'items_list'            => 'plural',
+		/**
+		 * Custom labels
+		 *
+		 * @see mimosafa\WP\Device\PostType\Label
+		 */
+		'enter_title_here' => null,
 	];
-	protected static $labels_hier = [
-		'parent_item_colon' => [ 'singular', 'Parent %s:' ]
+
+	protected static $supports = [
+		'title',
+		'editor',
+		'comments',
+		'revisions',
+		'trackbacks',
+		'author',
+		'excerpt',
+		'page-attributes',
+		'thumbnail',
+		'custom-fields',
+		'post-formats'
 	];
-	protected static $labels_fi = [
-		'featured_image'        => [ 'fi', '%s' ],
-		'set_featured_image'    => [ 'fi', 'Set %s' ],
-		'remove_featured_image' => [ 'fi', 'Remove %s' ],
-		'use_featured_image'    => [ 'fi', 'Use as %s' ]
-	];
+
+	protected static $gettable = [ 'name', 'id', 'value_objects' ];
+
+	/**
+	 * Parameter setter.
+	 *
+	 * @access public
+	 */
+	public function __set( $name, $value ) {
+		if ( array_key_exists( $name, self::$label_keys ) && filter_var( $value ) ) {
+			/**
+			 * Set labels
+			 */
+			if ( ! is_array( $this->args['labels'] ) ) {
+				$this->args['labels'] = [];
+			}
+			$this->args['labels'][$name] = esc_html( $value );
+		}
+		else if ( $name === 'support' ) {
+			/**
+			 * Set post type supports.
+			 */
+			if ( in_array( $value, self::$supports, true ) ) {
+				if ( is_string( $this->args['supports'] ) ) {
+					$this->args['supports'] = preg_split( '/[\s,]+/', $this->args['supports'] );
+				}
+				if ( is_array( $this->args['supports'] ) ) {
+					if ( ! in_array( $name, $this->args['supports'], true ) ) {
+						$this->args['supports'][] = $value;
+					}
+				}
+			}
+		}
+		else {
+			parent::__set( $name, $value );
+		}
+	}
 
 	/**
 	 * Set value object.
@@ -104,7 +165,7 @@ class PostType extends Rewritable {
 	 */
 	public function add_value_object( $name, $args = [] ) {
 		$args = wp_parse_args( $args, [ 'model' => 'metadata' ] );
-		$class = static::$_value_object_namespace . filter_var( $args['model'] );
+		$class = static::$_value_object_namespace . str_replace( '_', '', filter_var( $args['model'] ) );
 		unset( $args['model'] );
 		if ( class_exists( $class ) && $object = $class::create( $this, $name, $args ) ) {
 			$this->value_objects[$name] = $object;
@@ -137,7 +198,6 @@ class PostType extends Rewritable {
 		if ( post_type_exists( $this->id ) ) {
 			return;
 		}
-		$this->args = wp_parse_args( $this->args, static::$defaults );
 		/**
 		 * @var array          $labels
 		 * @var string         $description
@@ -256,7 +316,7 @@ class PostType extends Rewritable {
 		if ( ! isset( $labels['singular_name'] ) || ! filter_var( $labels['singular_name'] ) ) {
 			$labels['singular_name'] = $labels['name'];
 		}
-		self::createLabels( $labels, $hierarchical, $supports && in_array( 'thumbnail', $supports, true ) );
+		self::generateLabels( $labels );
 
 		/**
 		 * Compact the regulated arguments.
@@ -270,48 +330,27 @@ class PostType extends Rewritable {
 	}
 
 	/**
-	 * Create post type labels.
+	 * Create post type labels & expand labels.
 	 *
 	 * @access private
+	 *
+	 * @uses mimosafa\WP\Device\PostType\Label
 	 *
 	 * @param  array   &$labels
 	 * @param  boolean $hier
 	 * @param  boolean $thumb
 	 */
-	private static function createLabels( &$labels, $hier, $thumb ) {
-		$formats = self::$labels_defaults;
-		if ( $hier ) {
-			$formats = $formats + self::$labels_hier;
-		}
-		if ( $thumb && isset( $labels['featured_image'] ) && filter_var( $labels['featured_image'] ) ) {
-			$formats = $formats + self::$labels_fi;
-		}
-		foreach ( $formats as $key => $format ) {
-			if ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) {
-				$str = '';
-				if ( is_array( $format ) ) {
-					if ( $format[0] === 'plural' ) {
-						$str = $labels['name'];
-					}
-					else if ( $format[0] === 'singular' ) {
-						$str = $labels['singular_name'];
-					}
-					else if ( $format[0] === 'fi' ) {
-						$str = $labels['featured_image'];
-					}
-					if ( is_array( $format[1] ) ) {
-						$f = _x( $format[1][0], $format[1][1], 'wp-mimosafa-libs' );
-					} else {
-						$f = __( $format[1], 'wp-mimosafa-libs' );
-					}
-					if ( $str && $f ) {
-						$labels[$key] = sprintf( $f, $str );
-					}
-				}
-				else {
-					$labels[$key] = __( $format, 'wp-mimosafa-libs' );
-				}
+	private static function generateLabels( &$labels ) {
+		$singular = $labels['singular_name'];
+		$plural   = $labels['name'];
+		$featured_image = isset( $labels['featured_image'] ) && filter_var( $labels['featured_image'] ) ? $labels['featured_image'] : null;
+		foreach ( self::$label_keys as $key => $context ) {
+			if ( $context && ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) ) {
+				$labels[$key] = Device\PostType\Label::generate( $key, ${$context} );
 			}
+		}
+		foreach ( array_keys( $labels ) as $label_key ) {
+			Device\PostType\Label::expand( $label_key );
 		}
 	}
 

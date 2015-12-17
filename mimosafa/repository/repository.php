@@ -40,6 +40,13 @@ abstract class Repository implements RepositoryRepository {
 	protected static $builtins = [];
 
 	/**
+	 * Default arguments.
+	 *
+	 * @var array
+	 */
+	protected static $defaults = [];
+
+	/**
 	 * @var string
 	 */
 	protected $name;
@@ -52,12 +59,14 @@ abstract class Repository implements RepositoryRepository {
 	/**
 	 * @var array
 	 */
-	protected $args;
+	protected $args = [];
 
 	/**
 	 * @var boolean
 	 */
 	protected $_builtin;
+
+	protected static $gettable = [ 'name', 'id' ];
 
 	/**
 	 * Constructor
@@ -71,7 +80,7 @@ abstract class Repository implements RepositoryRepository {
 	protected function __construct( $name, $id, Array $args, $builtin ) {
 		$this->name = $name;
 		$this->id   = $id;
-		$this->args = $args;
+		$this->args = wp_parse_args( $args, static::$defaults );
 		$this->_builtin = $builtin;
 		static::$ids[$id] = $name;
 	}
@@ -85,8 +94,13 @@ abstract class Repository implements RepositoryRepository {
 		$this->args[$name] = $value;
 	}
 
+	/**
+	 * Getter
+	 *
+	 * @access public
+	 */
 	public function __get( $name ) {
-		return in_array( $name, [ 'name', 'id', 'value_objects' ] ) ? $this->$name : null;
+		return in_array( $name, static::$gettable ) ? $this->$name : null;
 	}
 
 	/**

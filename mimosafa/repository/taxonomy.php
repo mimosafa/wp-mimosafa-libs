@@ -30,7 +30,7 @@ class Taxonomy extends Rewritable {
 	 *
 	 * @var array
 	 */
-	private static $defaults = [
+	protected static $defaults = [
 		'labels'                => [],
 		'description'           => '',
 		'public'                => true,
@@ -148,7 +148,6 @@ class Taxonomy extends Rewritable {
 	 * @access public
 	 */
 	public function regulate() {
-		$this->args = wp_parse_args( $this->args, static::$defaults );
 		/**
 		 * @var array          $labels
 		 * @var string         $description
