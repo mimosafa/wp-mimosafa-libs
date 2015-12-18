@@ -80,7 +80,7 @@ abstract class Repository implements RepositoryRepository {
 	protected function __construct( $name, $id, Array $args, $builtin ) {
 		$this->name = $name;
 		$this->id   = $id;
-		$this->args = wp_parse_args( $args, static::$defaults );
+		$this->args = $args;
 		$this->_builtin = $builtin;
 		static::$ids[$id] = $name;
 	}
@@ -154,7 +154,7 @@ abstract class Repository implements RepositoryRepository {
 			 */
 			return null;
 		}
-		$args = wp_parse_args( $args );
+		$args = wp_parse_args( $args, static::$defaults );
 		return static::$instances[$name] = new static( $name, $id, $args, $builtin );
 	}
 

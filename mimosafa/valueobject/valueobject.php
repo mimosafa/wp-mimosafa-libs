@@ -37,7 +37,7 @@ abstract class ValueObject implements ValueObjectValueObject {
 	 * @param  string       $repository_id
 	 * @param  array|string $args
 	 */
-	protected function __construct( $name, $repository_id, $args ) {
+	protected function __construct( $name, $repository_id, Array $args ) {
 		$this->name = $name;
 		$this->repository_id = $repository_id;
 		$this->args = $args;
@@ -64,6 +64,7 @@ abstract class ValueObject implements ValueObjectValueObject {
 	 */
 	public static function create( $repository_id, $name, $args = [] ) {
 		if ( filter_var( $repository_id ) && filter_var( $name ) && $name === sanitize_key( $name ) ) {
+			$args = wp_parse_args( $args, static::$defaults );
 			return new static( $name, $repository_id, $args );
 		}
 	}

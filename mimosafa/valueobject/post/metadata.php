@@ -10,7 +10,7 @@ class Metadata extends ValueObject\Post {
 		'labels'            => [],
 		'description'       => '',
 		'public'            => true,
-		'show_ui'           => false,
+		'show_ui'           => null,
 		'show_admin_column' => false,
 		'multiple'          => false,
 		'sanitize'          => null,
@@ -20,7 +20,6 @@ class Metadata extends ValueObject\Post {
 		if ( ! post_type_exists( $this->repository_id ) ) {
 			return;
 		}
-		$this->args = wp_parse_args( $this->args, static::$defaults );
 		/**
 		 * @var array $labels
 		 * @var boolean $public
@@ -29,10 +28,14 @@ class Metadata extends ValueObject\Post {
 		 */
 		extract( $this->args );
 
-		$public            = filter_var( $public,            \FILTER_VALIDATE_BOOLEAN );
-		$show_ui           = filter_var( $show_ui,           \FILTER_VALIDATE_BOOLEAN );
-		$show_admin_column = filter_var( $show_admin_column, \FILTER_VALIDATE_BOOLEAN );
-		$multiple          = filter_var( $multiple,          \FILTER_VALIDATE_BOOLEAN );
+		$public   = filter_var( $public,   \FILTER_VALIDATE_BOOLEAN );
+		$multiple = filter_var( $multiple, \FILTER_VALIDATE_BOOLEAN );
+		if ( isset( $show_ui ) ) {
+			$show_ui = filter_var( $show_ui, \FILTER_VALIDATE_BOOLEAN );
+		} else {
+			$show_ui = $public;
+		}
+		$show_admin_column = filter_var( $show_admin_column, \FILTER_VALIDATE_BOOLEAN ); 
 
 		if ( is_array( $description ) || is_object( $description ) ) {
 			$description = '';
