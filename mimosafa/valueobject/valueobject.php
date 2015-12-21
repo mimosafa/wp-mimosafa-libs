@@ -25,6 +25,7 @@ abstract class ValueObject implements ValueObjectValueObject {
 
 	protected static $defaults = [];
 	protected static $map = [];
+	protected static $_repository_class = null;
 
 	abstract public function regulate();
 
@@ -57,16 +58,31 @@ abstract class ValueObject implements ValueObjectValueObject {
 	 *
 	 * @access public
 	 *
-	 * @param  string       $name
-	 * @param  string       $repository
-	 * @param  array|string $args
+	 * @param  string                                             $name
+	 * @param  mimosafa\WP\Repository\RepositoryRepository|string $repository
+	 * @param  array|string                                       $args
 	 * @return mimosafa\WP\ValueObjectValueObject
 	 */
-	public static function create( $repository_id, $name, $args = [] ) {
-		if ( filter_var( $repository_id ) && filter_var( $name ) && $name === sanitize_key( $name ) ) {
+	public static function create( $repository, $name, $args = [] ) {
+		if ( filter_var( $name ) && $name === sanitize_key( $name ) ) {
 			$args = wp_parse_args( $args, static::$defaults );
-			return new static( $name, $repository_id, $args );
+			if ( is_object( $repository ) ) {
+				if ( isset( static::$_repository_class) && $repository instanceof static::$_repository_class ) {
+					return new static( $name, $repository->id, $args );
+				}
+			}
+			else if ( is_string( $repository ) && $repository ) {
+				if ( $repository_class = static::$_repository_class ) {
+					if ( $instance = $repository_class::create( $repository ) ) {
+						return $instance->add_value_object( $name, $args );
+					}
+					else if ( $instance = $repository_class::getRepository( $repository ) ) {
+						return $instance->add_value_object( $name, $args );
+					}
+				}
+			}
 		}
+		return null;
 	}
 
 	public function to_array() {
