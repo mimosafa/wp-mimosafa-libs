@@ -1,6 +1,5 @@
 <?php
-namespace mimosafa\WP\Repository;
-use mimosafa\WP\Device;
+namespace mimosafa\WP\Object\Repository;
 /**
  * Post Type Repository Class
  *
@@ -16,7 +15,7 @@ use mimosafa\WP\Device;
 class PostType extends Rewritable {
 
 	protected $value_objects = [];
-	protected static $_value_object_namespace = '\\mimosafa\\WP\\ValueObject\\Post\\';
+	protected static $_value_object_namespace = '\\mimosafa\\WP\\Object\\ValueObject\\Post\\';
 
 	/**
 	 * WordPress built-in post types
@@ -50,7 +49,7 @@ class PostType extends Rewritable {
 		'capability_type'      => null,
 		'capabilities'         => [],
 		'map_meta_cap'         => null,
-		'supports'             => [],
+		'supports'             => [ 'title', 'editor' ],
 		'register_meta_box_cb' => null,
 		'taxonomies'           => [],
 		'has_archive'          => false,
@@ -71,35 +70,35 @@ class PostType extends Rewritable {
 	 * Label formats.
 	 *
 	 * @var array
-	 * @see mimosafa\WP\Device\PostType\Label
 	 */
-	protected static $label_keys = [
+	protected static $label_formats = [
+		/**
+		 * WordPress default post type labels.
+		 */
 		'name'                  => null,
 		'singular_name'         => null,
 		'add_new'               => null,
-		'add_new_item'          => 'singular',
-		'edit_item'             => 'singular',
-		'new_item'              => 'singular',
-		'view_item'             => 'singular',
-		'search_items'          => 'plural',
-		'not_found'             => 'plural',
-		'not_found_in_trash'    => 'plural',
-		'all_items'             => 'plural',
-		'parent_item_colon'     => 'singular',
-		'uploaded_to_this_item' => 'singular',
+		'add_new_item'          => [ 'singular', 'Add New %s' ],
+		'edit_item'             => [ 'singular', 'Edit %s' ],
+		'new_item'              => [ 'singular', 'New %s' ],
+		'view_item'             => [ 'singular', 'View %s' ],
+		'search_items'          => [ 'plural', 'Search %s' ],
+		'not_found'             => [ 'plural', 'No %s found.' ],
+		'not_found_in_trash'    => [ 'plural', 'No %s found in Trash.' ],
+		'all_items'             => [ 'plural', 'All %s' ],
+		'parent_item_colon'     => [ 'singular', 'Parent %s:' ],
+		'uploaded_to_this_item' => [ 'singular', 'Uploaded to this %s' ],
 		'featured_image'        => null,
-		'set_featured_image'    => 'featured_image',
-		'remove_featured_image' => 'featured_image',
-		'use_featured_image'    => 'featured_image',
-		'archives'              => 'singular',
-		'insert_into_item'      => 'singular',
-		'filter_items_list'     => 'plural',
-		'items_list_navigation' => 'plural',
-		'items_list'            => 'plural',
+		'set_featured_image'    => [ 'featured_image', 'Set %s' ],
+		'remove_featured_image' => [ 'featured_image', 'Remove %s' ],
+		'use_featured_image'    => [ 'featured_image', 'Use as %s' ],
+		'archives'              => [ 'singular', '%s Archives' ],
+		'insert_into_item'      => [ 'singular', 'Insert into %s' ],
+		'filter_items_list'     => [ 'plural', 'Filter %s list' ],
+		'items_list_navigation' => [ 'plural', '%s list navigation' ],
+		'items_list'            => [ 'plural', '%s list' ],
 		/**
-		 * Custom labels
-		 *
-		 * @see mimosafa\WP\Device\PostType\Label
+		 * Custom labels.
 		 */
 		'enter_title_here' => null,
 	];
@@ -129,35 +128,49 @@ class PostType extends Rewritable {
 		/**
 		 * Set post type supports.
 		 */
-		if ( $name === 'support' ) {
-			if ( in_array( $value, self::$supports, true ) ) {
-				if ( is_string( $this->args['supports'] ) ) {
-					$this->args['supports'] = preg_split( '/[\s,]+/', $this->args['supports'] );
-				}
-				if ( is_array( $this->args['supports'] ) ) {
-					if ( ! in_array( $name, $this->args['supports'], true ) ) {
-						$this->args['supports'][] = $value;
+		if ( preg_match( '/^support_(\w+)/', $name, $m ) ) {
+			$support = str_replace( '_', '-', $m[1] );
+			if ( in_array( $support, self::$supports, true ) ) {
+				if ( ! is_array( $this->args['supports'] ) ) {
+					if ( filter_var( $this->args['supports'], \FILTER_VALIDATE_BOOLEAN ) ) {
+						$this->args['supports'] = [];
 					}
+					if ( is_string( $this->args['supports'] ) ) {
+						$this->args['supports'] = preg_split( '/[\s,]+/', $this->args['supports'] );
+					}
+				}
+				if ( filter_var( $value, \FILTER_VALIDATE_BOOLEAN ) ) {
+					$this->args['supports'][] = $support;
+				}
+				else if ( in_array( $support, $this->args['supports'], true ) ) {
+					$i = array_search( $support, $this->args['supports'], true );
+					unset( $this->args['supports'][$i] );
 				}
 			}
 		}
 		/**
 		 * Set rewrite arguments.
 		 */
-		else if ( array_key_exists( $name, self::$rewrite_defaults ) ) {
-			if ( ! is_array( $this->args['rewrite'] ) ) {
-				$this->args['rewrite'] = [];
+		else if ( preg_match( '/^rewrite_([a-z_]+)/', $name, $m ) ) {
+			$key = $m[1];
+			if ( array_key_exists( $key, self::$rewrite_defaults ) ) {
+				if ( ! is_array( $this->args['rewrite'] ) ) {
+					$this->args['rewrite'] = [];
+				}
+				$this->args['rewrite'][$key] = $value;
 			}
-			$this->args['rewrite'][$name] = $value;
 		}
 		/**
 		 * Set labels.
 		 */
-		else if ( array_key_exists( $name, self::$label_keys ) && filter_var( $value ) ) {
-			if ( ! is_array( $this->args['labels'] ) ) {
-				$this->args['labels'] = [];
+		else if ( preg_match( '/^label_([a-z_]+)/', $name, $m ) ) {
+			$key = $m[1];
+			if ( array_key_exists( $key, self::$label_formats ) && filter_var( $value ) ) {
+				if ( ! is_array( $this->args['labels'] ) ) {
+					$this->args['labels'] = [];
+				}
+				$this->args['labels'][$key] = esc_html( $value );
 			}
-			$this->args['labels'][$name] = esc_html( $value );
 		}
 		else {
 			parent::__set( $name, $value );
@@ -299,10 +312,13 @@ class PostType extends Rewritable {
 		} else {
 			$rewrite = $query_var = false;
 		}
-		if ( $supports !== [] && $supports !== false ) {
+		if ( filter_var( $supports, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE ) !== false && $supports !== [] ) {
 			if ( ! is_array( $supports ) ) {
 				$supports = is_string( $supports ) ? preg_split( '/[\s,]+/', $supports ) : [];
 			}
+			$supports = array_unique( $supports );
+		} else {
+			$supports = false;
 		}
 		if ( ! $capability_type || is_object( $capability_type ) || ( is_array( $capability_type ) && count( $capability_type ) !== 2 ) ) {
 			unset( $this->args['capability_type'] );
@@ -343,25 +359,18 @@ class PostType extends Rewritable {
 	 *
 	 * @access private
 	 *
-	 * @uses mimosafa\WP\Device\PostType\Label
-	 *
-	 * @param  array   &$labels
-	 * @param  boolean $hier
-	 * @param  boolean $thumb
+	 * @param  array &$labels
 	 */
 	private static function generateLabels( &$labels ) {
 		$singular = $labels['singular_name'];
 		$plural   = $labels['name'];
 		$featured_image = isset( $labels['featured_image'] ) && filter_var( $labels['featured_image'] ) ? $labels['featured_image'] : null;
-		foreach ( self::$label_keys as $key => $context ) {
-			if ( $context && ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) ) {
-				if ( $string = ${$context} ) {
-					$labels[$key] = Device\PostType\Label::generate( $key, $string );
+		foreach ( self::$label_formats as $key => $format ) {
+			if ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) {
+				if ( is_array( $format ) && ( $string = ${$format[0]} ) ) {
+					$labels[$key] = esc_html( sprintf( __( $format[1], 'wp-mimosafa-libs' ), $string ) );
 				}
 			}
-		}
-		foreach ( array_keys( $labels ) as $label_key ) {
-			Device\PostType\Label::expand( $label_key );
 		}
 	}
 

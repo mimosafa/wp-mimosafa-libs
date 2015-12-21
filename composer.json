@@ -1,0 +1,15 @@
+{
+    "name": "mimosafa/wp-mimosafa-libs",
+    "description": "WordPress Libraries by mimosafa - Extension Libraries for WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Toshimichi Mimoto",
+            "email": "mimosafa@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    }
+}

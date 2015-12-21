@@ -1,5 +1,5 @@
 <?php
-namespace mimosafa\WP\ValueObject;
+namespace mimosafa\WP\Object\ValueObject;
 
 interface ValueObjectValueObject {
 

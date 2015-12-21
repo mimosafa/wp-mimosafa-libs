@@ -1,6 +1,6 @@
 <?php
-namespace mimosafa\WP\ValueObject\Post;
-use mimosafa\WP\ValueObject;
+namespace mimosafa\WP\Object\ValueObject\Post;
+use mimosafa\WP\Object\ValueObject;
 
 class PostStatus extends ValueObject\Post {
 

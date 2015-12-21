@@ -1,5 +1,5 @@
 <?php
-namespace mimosafa\WP\Repository;
+namespace mimosafa\WP\Object\Repository;
 /**
  * Abstract Repository Definition Class
  *
@@ -18,7 +18,7 @@ abstract class Repository implements RepositoryRepository {
 	 * Repository instances.
 	 *
 	 * @var array {
-	 *     @type mimosafa\WP\Repository\RepositoryRepository ${$name}
+	 *     @type RepositoryRepository ${$name}
 	 * }
 	 */
 	protected static $instances = [];
@@ -111,7 +111,7 @@ abstract class Repository implements RepositoryRepository {
 	 * @param  string        $name
 	 * @param  string        $id    Optional
 	 * @param  array|string  $args  Optional
-	 * @return mimosafa\WP\Repository\RepositoryInterface|null
+	 * @return RepositoryRepository|null
 	 */
 	public static function create( $name, $id = null, $args = [] ) {
 		if ( ! filter_var( $name ) || isset( static::$instances[$name] ) ) {
@@ -164,7 +164,7 @@ abstract class Repository implements RepositoryRepository {
 	 * @access public
 	 *
 	 * @param  string $name
-	 * @return mimosafa\WP\Repository\RepositoryInterface|null
+	 * @return RepositoryRepository|null
 	 */
 	public static function getInstance( $name ) {
 		if ( filter_var( $name ) ) {

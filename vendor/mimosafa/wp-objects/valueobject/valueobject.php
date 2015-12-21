@@ -1,6 +1,5 @@
 <?php
-namespace mimosafa\WP\ValueObject;
-use mimosafa\WP\Repository;
+namespace mimosafa\WP\Object\ValueObject;
 
 abstract class ValueObject implements ValueObjectValueObject {
 
@@ -58,10 +57,10 @@ abstract class ValueObject implements ValueObjectValueObject {
 	 *
 	 * @access public
 	 *
-	 * @param  string                                             $name
-	 * @param  mimosafa\WP\Repository\RepositoryRepository|string $repository
-	 * @param  array|string                                       $args
-	 * @return mimosafa\WP\ValueObjectValueObject
+	 * @param  string                                                    $name
+	 * @param  mimosafa\WP\Object\Repository\RepositoryRepository|string $repository
+	 * @param  array|string                                              $args
+	 * @return mimosafa\WP\Object\ValueObjectValueObject
 	 */
 	public static function create( $repository, $name, $args = [] ) {
 		if ( filter_var( $name ) && $name === sanitize_key( $name ) ) {
@@ -71,14 +70,9 @@ abstract class ValueObject implements ValueObjectValueObject {
 					return new static( $name, $repository->id, $args );
 				}
 			}
-			else if ( is_string( $repository ) && $repository ) {
-				if ( $repository_class = static::$_repository_class ) {
-					if ( $instance = $repository_class::create( $repository ) ) {
-						return $instance->add_value_object( $name, $args );
-					}
-					else if ( $instance = $repository_class::getRepository( $repository ) ) {
-						return $instance->add_value_object( $name, $args );
-					}
+			else if ( is_string( $repository ) && $repository && $repository_class = static::$_repository_class ) {
+				if ( $instance = $repository_class::getRepository( $repository ) ) {
+					return $instance->add_value_object( $name, $args );
 				}
 			}
 		}

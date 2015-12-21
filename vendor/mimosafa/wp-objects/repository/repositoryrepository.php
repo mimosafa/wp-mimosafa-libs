@@ -1,5 +1,5 @@
 <?php
-namespace mimosafa\WP\Repository;
+namespace mimosafa\WP\Object\Repository;
 /**
  * Interface of Repository
  *

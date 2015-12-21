@@ -89,8 +89,9 @@ class ClassLoader {
 	 */
 	public static function register( $namespace, $path, $options = null, $prepend = false ) {
 		$self = new self( $namespace, $path, $options );
-		if ( $self->path )
+		if ( $self->path ) {
 			$self->_autoload_register( $prepend );
+		}
 	}
 
 	/**
@@ -103,12 +104,14 @@ class ClassLoader {
 	 * @param  null|array $options
 	 */
 	private function __construct( $namespace, $path, $options ) {
-		if ( ! filter_var( $namespace ) || ! $path = realpath( $path ) )
+		if ( ! filter_var( $namespace ) || ! $path = realpath( $path ) ) {
 			return;
+		}
 		$this->namespace = $namespace;
 		$this->path = rtrim( $path, '/' ) . '/';
-		if ( is_array( $options ) && $options )
+		if ( is_array( $options ) && $options ) {
 			$this->_set_options( $options );
+		}
 	}
 
 	/**
@@ -136,16 +139,21 @@ class ClassLoader {
 		}
 		$options = filter_var_array( $options, $def );
 		extract( $options );
-		if ( isset( $hyphenate_classname ) )
+		if ( isset( $hyphenate_classname ) ) {
 			$this->cnHyphenate = $hyphenate_classname;
-		if ( isset( $hyphenate_namespace ) )
+		}
+		if ( isset( $hyphenate_namespace ) ) {
 			$this->nsHyphenate = $hyphenate_namespace;
-		if ( isset( $decamelize_classname ) )
+		}
+		if ( isset( $decamelize_classname ) ) {
 			$this->cnDecamelize = $decamelize_classname;
-		if ( isset( $decamelize_namespace ) )
+		}
+		if ( isset( $decamelize_namespace ) ) {
 			$this->nsDecamelize = $decamelize_namespace;
-		if ( isset( $file_prefix ) )
+		}
+		if ( isset( $file_prefix ) ) {
 			$this->filePrefix = $file_prefix;
+		}
 	}
 
 	/**
@@ -162,8 +170,9 @@ class ClassLoader {
 	 */
 	public function loadClass( $class ) {
 		$sep = $this->nsSep;
-		if ( $this->namespace . $sep !== substr( $class, 0, strlen( $this->namespace . $sep ) ) )
+		if ( $this->namespace . $sep !== substr( $class, 0, strlen( $this->namespace . $sep ) ) ) {
 			return;
+		}
 		$class = substr( $class, strlen( $this->namespace ) + 1 );
 		$file = '';
 		if ( 0 < $lastNsPos = strripos( $class, $sep ) ) {
@@ -172,10 +181,12 @@ class ClassLoader {
 			if ( $this->nsDecamelize ) {
 				// @todo
 			}
-			if ( $this->nsHyphenate )
+			if ( $this->nsHyphenate ) {
 				list( $search, $replace ) = [ [ '_', $sep ], [ '-', '/' ] ];
-			else
+			}
+			else {
 				list( $search, $replace ) = [ $sep, '/' ];
+			}
 			$file = str_replace( $search, $replace, $subNs ) . '/';
 		}
 		if ( $this->cnDecamelize ) {
@@ -184,8 +195,9 @@ class ClassLoader {
 		$file .= $this->filePrefix;
 		$file .= $this->cnHyphenate ? str_replace( '_', '-', $class ) : $class;
 		$file  = $this->path . $file . '.php';
-		if ( file_exists( $file ) )
+		if ( file_exists( $file ) ) {
 			require_once $file;
+		}
 	}
 
 }
