@@ -41,10 +41,10 @@ abstract class ValueObject implements ValueObjectValueObject {
 		$this->name = $name;
 		$this->repository_id = $repository_id;
 		$this->args = $args;
-		add_action( 'init', [ $this, 'init' ], 20 );
+		add_action( 'init', [ $this, 'map' ], 20 );
 	}
 
-	public function init() {
+	public function map() {
 		$this->regulate();
 		if ( ! isset( static::$map[$this->repository_id] ) ) {
 			static::$map[$this->repository_id] = [];

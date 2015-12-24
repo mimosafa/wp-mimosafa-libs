@@ -22,19 +22,19 @@ class Post {
 	];
 
 	protected $hooks = [
-		'dbx_post_advanced'          => [],
+		// 'dbx_post_advanced'          => [],
 		'edit_form_top'              => [],
 		'edit_form_before_permalink' => [],
 		'edit_form_after_title'      => [],
 		'edit_form_after_editor'     => [],
-		# 'submit_box'                 => [],
+		// 'submit_box'                 => [],
 		'edit_form_advanced'         => [],
-		# 'dbx_post_sidebar'           => [],
+		// 'dbx_post_sidebar'           => [],
 	];
 
 	protected static $instances = [];
 
-	public static function getInstance( $post_type, $args = [] ) {
+	public static function instance( $post_type, $args = [] ) {
 		if ( filter_var( $post_type ) ) {
 			if ( ! isset( static::$instances[$post_type] ) ) {
 				static::$instances[$post_type] = new static( $post_type, wp_parse_args( $args ) );
@@ -72,51 +72,6 @@ class Post {
 				endif;
 			}
 			$this->init();
-		}
-	}
-
-	public function init() {
-		add_action( 'add_meta_boxes_' . $this->post_type, [ $this, 'remove_meta_boxes' ], 9 );
-		if ( $this->hooks = array_filter( $this->hooks ) ) {
-			foreach ( array_keys( $this->hooks ) as $hook ) {
-				add_action( $hook, [ $this, 'advanced_hooks' ] );
-			}
-		}
-		if ( $this->meta_boxes = array_filter( $this->meta_boxes ) ) {
-			add_action( 'add_meta_boxes_' . $this->post_type, [ $this, 'add_meta_boxes' ], 10 );
-		}
-	}
-
-	public function advanced_hooks( \WP_Post $post ) {
-		foreach ( $this->hooks as $hook => $array ) {
-			if ( doing_action( $hook ) ) {
-				unset( $this->hooks[$hook] );
-				break;
-			}
-		}
-		foreach ( $array as $args ) {
-			if ( isset( $args['callback'] ) && is_callable( $args['callback'] ) ) {
-				$func = $args['callback'];
-				unset( $args['callback'] );
-				call_user_func( $func, $post, $args );
-			}
-		}
-	}
-
-	public function add_meta_boxes( ) {
-		foreach ( $this->meta_boxes as $context => $array ) {
-			foreach ( $array as $args ) {
-				if ( isset( $args['callback'] ) && is_callable( $args['callback'] ) ) {
-					/*
-					$id = $args['id'];
-					$title = isset( $args['title'] ) && filter_var( $args['title'] ) ? esc_html( $args['title'] ) : esc_html( self::labelize( $id ) );
-					$callback = $args['callback'];
-					unset( $args['callback'] );
-					$priority = isset( $args['priority'] ) && filter_var( $args['priority'] ) 
-					add_meta_box( $id, $title, $callback, $screen, $context, $priority, $callback_args );
-					*/
-				}
-			}
 		}
 	}
 
@@ -158,19 +113,30 @@ class Post {
 	}
 
 	protected function extra( Array $args ) {
-		/**
-		 * @var string $context
-		 */
-		extract( $args );
-
-		$context = isset( $context ) && filter_var( $context ) ? $context : 'advanced';
-		if ( array_key_exists( $context, $this->meta_boxes ) ) {
-			$this->meta_boxes[$context][] = $args;
-			return;
+		if ( isset( $args['callback'] ) && is_callable( $args['callback'] ) ) {
+			if ( ! isset( $args['context'] ) || ! filter_var( $args['context'] ) ) {
+				$args['context'] = 'advanced';
+			}
+			if ( array_key_exists( $args['context'], $this->meta_boxes ) ) {
+				$this->meta_boxes[$args['context']][] = $args;
+				return;
+			}
+			else if ( array_key_exists( $args['context'], $this->hooks ) ) {
+				$this->hooks[$args['context']][] = $args;
+				return;
+			}
 		}
-		else if ( array_key_exists( $context, $this->hooks ) ) {
-			$this->hooks[$context][] = $args;
-			return;
+	}
+
+	public function init() {
+		add_action( 'add_meta_boxes_' . $this->post_type, [ $this, 'remove_meta_boxes' ], 9 );
+		if ( $this->hooks = array_filter( $this->hooks ) ) {
+			foreach ( array_keys( $this->hooks ) as $hook ) {
+				add_action( $hook, [ $this, 'advanced_hooks' ] );
+			}
+		}
+		if ( $this->meta_boxes = array_filter( $this->meta_boxes ) ) {
+			add_action( 'add_meta_boxes_' . $this->post_type, [ $this, 'add_meta_boxes' ], 10 );
 		}
 	}
 
@@ -180,6 +146,46 @@ class Post {
 				call_user_func_array( 'remove_meta_box', $box );
 			}
 		}
+	}
+
+	public function advanced_hooks( \WP_Post $post ) {
+		foreach ( $this->hooks as $hook => $array ) {
+			if ( doing_action( $hook ) ) {
+				unset( $this->hooks[$hook] );
+				break;
+			}
+		}
+		foreach ( $array as $args ) {
+			if ( isset( $args['callback'] ) && is_callable( $args['callback'] ) ) {
+				$func = $args['callback'];
+				unset( $args['callback'] );
+				unset( $args['context'] );
+				call_user_func( $func, $post, $args );
+			}
+		}
+	}
+
+	public function add_meta_boxes() {
+		static $defaults = [
+			'title'    => '',
+			'priority' => 'default',
+		];
+		foreach ( $this->meta_boxes as $context => $array ) {
+			foreach ( $array as $args ) {
+				if ( isset( $args['callback'] ) && is_callable( $args['callback'] ) ) {
+					$this->add_meta_box( wp_parse_args( $args, $defaults ) );
+				}
+			}
+		}
+	}
+
+	protected function add_meta_box( Array $args ) {
+		extract( $args );
+		$title = filter_var( $title ) ? esc_html( $title ) : esc_html( self::labelize( $id ) );
+		unset( $args['id'] );
+		unset( $args['callback'] );
+		unset( $args['context'] );
+		add_meta_box( $id, $title, $callback, null, $context, $priority, $args );
 	}
 
 	protected static function labelize( $string ) {
