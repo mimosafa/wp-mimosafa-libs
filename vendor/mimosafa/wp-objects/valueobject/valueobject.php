@@ -79,10 +79,6 @@ abstract class ValueObject implements ValueObjectValueObject {
 		return null;
 	}
 
-	public function to_array() {
-		return array_merge( $this->args, [ 'name' => $this->name ] );
-	}
-
 	/**
 	 * Labelize
 	 *

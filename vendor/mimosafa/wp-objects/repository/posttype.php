@@ -15,7 +15,8 @@ namespace mimosafa\WP\Object\Repository;
 class PostType extends Rewritable {
 
 	protected $value_objects = [];
-	protected static $_value_object_namespace = '\\mimosafa\\WP\\Object\\ValueObject\\Post\\';
+	protected $map = [];
+	protected static $_value_object_class = '\\mimosafa\\WP\\Object\\ValueObject\\Post';
 
 	/**
 	 * WordPress built-in post types
@@ -119,6 +120,13 @@ class PostType extends Rewritable {
 
 	protected static $gettable = [ 'name', 'id', 'value_objects' ];
 
+	protected function __construct( $name, $id, Array $args, $builtin ) {
+		parent::__construct( $name, $id, $args, $builtin );
+		if ( is_admin() ) {
+			add_action( 'init', [ $this, 'admin_init' ], 21 );
+		}
+	}
+
 	/**
 	 * Parameter setter.
 	 *
@@ -187,10 +195,10 @@ class PostType extends Rewritable {
 	 */
 	public function add_value_object( $name, $args = [] ) {
 		$args = wp_parse_args( $args, [ 'model' => 'metadata' ] );
-		$class = static::$_value_object_namespace . str_replace( '_', '', filter_var( $args['model'] ) );
+		$class = static::$_value_object_class . '\\' . str_replace( '_', '', filter_var( $args['model'] ) );
 		unset( $args['model'] );
 		if ( class_exists( $class ) && $object = $class::create( $this, $name, $args ) ) {
-			$this->value_objects[$name] = $object;
+			return $this->value_objects[$name] = $object;
 		}
 	}
 
@@ -372,6 +380,49 @@ class PostType extends Rewritable {
 				}
 			}
 		}
+	}
+
+	public function admin_init() {
+		global $pagenow;
+		static $typenow;
+		if ( ! isset( $typenow ) ) {
+			if ( ! $typenow = filter_input( \INPUT_GET, 'post_type' ) ) {
+				if ( $post_id = filter_input( \INPUT_GET, 'post' ) ) {
+					$typenow = get_post_type( $post_id );
+				} else {
+					$typenow = 'post';
+				}
+			}
+		}
+		if ( $typenow === $this->id ) {
+			if ( in_array( $pagenow, [ 'post.php', 'post-new.php' ], true ) ) {
+				$this->admin_post();
+			}
+			else if ( $pagenow === 'edit.php' ) {
+				$this->admin_edit();
+			}
+		}
+	}
+
+	protected function admin_post() {
+		$class = self::$_value_object_class;
+		if ( $show_uis = $class::list_filter( $this->id, [ 'show_ui' => true ] ) ) {
+			$page_post_instance = \mimosafa\WP\Admin\Post::instance( $this->id );
+			foreach ( $show_uis as $key => $show_ui ) {
+				$page_post_instance->$key = array_merge( $show_ui, [ 'callback' => [$this, 'test' ] ] );
+			}
+		}
+	}
+
+	protected function admin_edit() {
+		$class = self::$_value_object_class;
+		if ( $show_admin_columns = $class::list_filter( $this->id, [ 'show_admin_column' => true ] ) ) {
+			// var_dump( $show_admin_columns );
+		}
+	}
+
+	public function test( \WP_Post $post, $box ) {
+		var_dump( $box );
 	}
 
 }

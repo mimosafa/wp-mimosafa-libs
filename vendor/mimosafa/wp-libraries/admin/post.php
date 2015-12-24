@@ -22,14 +22,11 @@ class Post {
 	];
 
 	protected $hooks = [
-		// 'dbx_post_advanced'          => [],
-		'edit_form_top'              => [],
-		'edit_form_before_permalink' => [],
-		'edit_form_after_title'      => [],
-		'edit_form_after_editor'     => [],
-		// 'submit_box'                 => [],
+		'edit_form_top'              => [], // Arias: top
+		'edit_form_before_permalink' => [], // Arias: before_permalink
+		'edit_form_after_title'      => [], // Arias: after_title
+		'edit_form_after_editor'     => [], // Arias: after_editor
 		'edit_form_advanced'         => [],
-		// 'dbx_post_sidebar'           => [],
 	];
 
 	protected static $instances = [];
@@ -117,12 +114,16 @@ class Post {
 			if ( ! isset( $args['context'] ) || ! filter_var( $args['context'] ) ) {
 				$args['context'] = 'advanced';
 			}
-			if ( array_key_exists( $args['context'], $this->meta_boxes ) ) {
+			if ( isset( $this->meta_boxes[$args['context']] ) ) {
 				$this->meta_boxes[$args['context']][] = $args;
 				return;
 			}
-			else if ( array_key_exists( $args['context'], $this->hooks ) ) {
+			else if ( isset( $this->hooks[$args['context']] ) ) {
 				$this->hooks[$args['context']][] = $args;
+				return;
+			}
+			else if ( isset( $this->hooks['edit_form_' . $args['context']] ) ) {
+				$this->hooks['edit_form_' . $args['context']][] = $args;
 				return;
 			}
 		}
