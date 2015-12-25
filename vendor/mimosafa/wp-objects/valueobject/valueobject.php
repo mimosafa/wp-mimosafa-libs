@@ -49,7 +49,7 @@ abstract class ValueObject implements ValueObjectValueObject {
 		if ( ! isset( static::$map[$this->repository_id] ) ) {
 			static::$map[$this->repository_id] = [];
 		}
-		static::$map[$this->repository_id][$this->name] = $this->args;
+		static::$map[$this->repository_id][$this->name] = array_merge( $this->args, [ 'name' => $this->name ] );
 	}
 
 	/**

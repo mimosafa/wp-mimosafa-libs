@@ -25,11 +25,11 @@ abstract class Rewritable extends Repository {
 	protected function __construct( $name, $id, Array $args, $builtin ) {
 		parent::__construct( $name, $id, $args, $builtin );
 		add_action( 'init', [ $this, 'regulate' ], 0 );
-		static $done;
-		if ( ! $done ) {
+		static $registered;
+		if ( ! $registered ) {
 			add_action( 'init', [ $this, 'register_taxonomies' ], 1 );
 			add_action( 'init', [ $this, 'register_post_types' ], 1 );
-			$done = true;
+			$registered = true;
 		}
 	}
 
