@@ -10,7 +10,7 @@ abstract class Component {
 
 	/**
 	 * {Post type|Taxonomy|Role} alias name.
-	 * Use as rerite slug.
+	 * Use as {post type|taxonomy} rerite slug.
 	 *
 	 * @var string
 	 */
@@ -81,6 +81,15 @@ abstract class Component {
 		$this->args = $args;
 		$this->_builtin = $builtin;
 		static::$ids[$id] = $name;
+	}
+
+	/**
+	 * Parameter setter.
+	 *
+	 * @access public
+	 */
+	public function __set( $name, $value ) {
+		$this->args[$name] = $value;
 	}
 
 	/**
@@ -178,6 +187,18 @@ abstract class Component {
 	 */
 	protected static function validateID( $id ) {
 		return filter_var( $id ) && $id === sanitize_key( $id ) ? $id : null;
+	}
+
+	/**
+	 * Labelize
+	 *
+	 * @access protected
+	 *
+	 * @param  string $string
+	 * @return string
+	 */
+	protected static function labelize( $string ) {
+		return ucwords( str_replace( [ '-', '_' ], ' ', $string ) );
 	}
 
 }
