@@ -1,26 +1,50 @@
 <?php
 namespace mimosafa\WP\Admin;
 
+/**
+ * WordPress admin UI helper class for {post.php|post-new.php}.
+ *
+ * @author Toshimichi Mimoto <mimosafa@gmail.com>
+ */
 class Post {
 
 	/**
+	 * Post type.
+	 *
 	 * @var string
 	 */
 	protected $post_type;
 
 	/**
+	 * Arguments cache.
+	 *
 	 * @var array
 	 */
 	protected $args;
 
-	protected $meta_boxes_removed = [];
+	/**
+	 * Exclude default meta boxes.
+	 *
+	 * @var array
+	 */
+	private $exclude_meta_boxes = [];
 
+	/**
+	 * Additional meta boxes.
+	 *
+	 * @var array
+	 */
 	protected $meta_boxes = [
 		'normal'   => [],
 		'advanced' => [],
 		'side'     => [],
 	];
 
+	/**
+	 * Additional elements.
+	 *
+	 * @var array
+	 */
 	protected $hooks = [
 		'edit_form_top'              => [], // Arias: top
 		'edit_form_before_permalink' => [], // Arias: before_permalink
@@ -29,8 +53,20 @@ class Post {
 		'edit_form_advanced'         => [],
 	];
 
+	/**
+	 * Instances (singleton pattern).
+	 *
+	 * @var array
+	 */
 	protected static $instances = [];
 
+	/**
+	 * Instance getter (singleton pattern).
+	 *
+	 * @access public
+	 *
+	 * @param  string $post_type
+	 */
 	public static function instance( $post_type, $args = [] ) {
 		if ( filter_var( $post_type ) ) {
 			if ( ! isset( static::$instances[$post_type] ) ) {
@@ -40,6 +76,13 @@ class Post {
 		}
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @access protected
+	 *
+	 * @param  string $post_type
+	 */
 	protected function __construct( $post_type, Array $args ) {
 		$this->post_type = $post_type;
 		$this->args = $args;
@@ -102,7 +145,7 @@ class Post {
 		];
 		if ( isset( $boxes[$key] ) ) {
 			if ( filter_var( $value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE ) === false ) {
-				$this->meta_boxes_removed[] = $boxes[$key];
+				$this->exclude_meta_boxes[] = $boxes[$key];
 				return true;
 			}
 		}
@@ -142,8 +185,8 @@ class Post {
 	}
 
 	public function remove_meta_boxes() {
-		if ( $this->meta_boxes_removed ) {
-			foreach ( $this->meta_boxes_removed as $box ) {
+		if ( $this->exclude_meta_boxes ) {
+			foreach ( $this->exclude_meta_boxes as $box ) {
 				call_user_func_array( 'remove_meta_box', $box );
 			}
 		}

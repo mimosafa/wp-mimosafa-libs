@@ -1,12 +1,12 @@
 <?php
-namespace mimosafa\WP\Component;
+namespace mimosafa\WP\Repository;
 
 /**
- * Abstract component class.
+ * Abstract repository class.
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  */
-abstract class Component {
+abstract class Repository {
 
 	/**
 	 * {Post type|Taxonomy|Role} alias name.

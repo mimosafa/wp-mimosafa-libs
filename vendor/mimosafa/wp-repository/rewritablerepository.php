@@ -1,14 +1,14 @@
 <?php
-namespace mimosafa\WP\Component;
+namespace mimosafa\WP\Repository;
 
 /**
- * Abstract rewritable component class.
+ * Abstract rewritable repository class.
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  *
- * @uses mimosafa\WP\Component\Component
+ * @uses mimosafa\WP\Repository\Repository
  */
-abstract class RewritableComponent extends Component {
+abstract class RewritableRepository extends Repository {
 
 	/**
 	 * Instances, whole post types & taxonomies created by this class.
@@ -80,7 +80,28 @@ abstract class RewritableComponent extends Component {
 	 * @access public
 	 */
 	public function register_taxonomies() {
-		//
+		if ( self::$taxonomies ) {
+			foreach ( self::$taxonomies as $tx ) {
+				/**
+				 * @var string $taxonomy
+				 * @var array  $object_type
+				 * @var array  $args
+				 */
+				extract( $tx, EXTR_OVERWRITE );
+
+				register_taxonomy( $taxonomy, $object_type, $args );
+				/**
+				 * Built-in object types
+				 */
+				if ( $object_type ) {
+					foreach ( (array) $object_type as $object ) {
+						if ( post_type_exists( $object ) ) {
+							register_taxonomy_for_object_type( $taxonomy, $object );
+						}
+					}
+				}
+			}
+		}
 	}
 
 	/**

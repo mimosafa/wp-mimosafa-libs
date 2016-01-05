@@ -1,14 +1,14 @@
 <?php
-namespace mimosafa\WP\Component;
+namespace mimosafa\WP\Repository;
 
 /**
- * Post type component builder.
+ * Post type repository builder.
  *
  * @author Toshimichi Mimoto <mimosafa@gmail.com>
  *
- * @uses mimosafa\WP\Component\RewritableComponent
+ * @uses mimosafa\WP\Repository\RewritableRepository
  */
-class PostType extends RewritableComponent {
+class PostType extends RewritableRepository {
 
 	/**
 	 * WordPress built-in post types
@@ -102,6 +102,11 @@ class PostType extends RewritableComponent {
 		'enter_title_here' => null,
 	];
 
+	/**
+	 * Parameter setter.
+	 *
+	 * @access public
+	 */
 	public function __set( $name, $value ) {
 		if ( preg_match( '/^support_(\w+)/', $name, $m ) ) {
 			/**
