@@ -107,7 +107,7 @@ abstract class Repository {
 			/**
 			 * $name must be valid string.
 			 */
-			return null;
+			throw new \Exception( '$name is required and must be valid string.' );
 		}
 		if ( isset( static::$instances[$name] ) ) {
 			/**
