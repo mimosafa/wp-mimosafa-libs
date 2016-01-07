@@ -1,6 +1,8 @@
 <?php
 namespace mimosafa;
 
+require_once 'vendor/autoload.php';
+
 require_once 'classloader.php';
 ClassLoader::register( 'mimosafa\WP\Http',       __DIR__ . '/vendor/mimosafa/wp-http'       );
 ClassLoader::register( 'mimosafa\WP\Repository', __DIR__ . '/vendor/mimosafa/wp-repository' );
