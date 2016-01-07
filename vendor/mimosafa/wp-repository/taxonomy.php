@@ -69,12 +69,12 @@ class Taxonomy extends RewritableRepository {
 	 * @access protected
 	 *
 	 * @param  string  $name
-	 * @param  string  $id
+	 * @param  string  $alias
 	 * @param  array   $args
 	 * @param  boolean $builtin
 	 */
-	protected function __construct( $name, $id, Array $args, $builtin ) {
-		parent::__construct( $name, $id, $args, $builtin );
+	protected function __construct( $name, $alias, Array $args, $builtin ) {
+		parent::__construct( $name, $alias, $args, $builtin );
 		if ( isset( $this->args['object_type'] ) ) {
 			if ( is_string( $this->args['object_type'] ) ) {
 				$this->args['object_type'] = preg_split( '/[\s,]+/', $this->args['object_type'] );
@@ -87,25 +87,25 @@ class Taxonomy extends RewritableRepository {
 	}
 
 	/**
-	 * Validate $id string for taxonomy.
+	 * Validate $alias string for taxonomy.
 	 *
 	 * @access protected
 	 *
-	 * @param  string $id
+	 * @param  string $alias
 	 * @return string|null
 	 */
-	protected static function validateID( $id ) {
-		if ( $id = parent::validateID( $id ) ) {
+	protected static function validateAlias( $alias ) {
+		if ( $alias = parent::validateAlias( $alias ) ) {
 			/**
 			 * Taxonomy name regulation.
 			 *
 			 * @see http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
 			 */
-			if ( strlen( $id ) > 32 || @preg_match( '/[0-9]\-/', $id ) ) {
-				$id = null;
+			if ( strlen( $alias ) > 32 || @preg_match( '/[0-9]\-/', $alias ) ) {
+				$alias = null;
 			}
 		}
-		return $id;
+		return $alias;
 	}
 
 	/**
@@ -114,7 +114,7 @@ class Taxonomy extends RewritableRepository {
 	 * @access public
 	 */
 	public function regulation() {
-		if ( taxonomy_exists( $this->id ) ) {
+		if ( taxonomy_exists( $this->alias ) ) {
 			return;
 		}
 		/**
@@ -182,7 +182,7 @@ class Taxonomy extends RewritableRepository {
 				$rewrite['ep_mask'] = filter_var( $rewrite['ep_mask'], \FILTER_VALIDATE_INT, [ 'options' => [ 'default' => EP_NONE ] ] );
 			}
 			if ( filter_var( $query_var, \FILTER_VALIDATE_BOOLEAN ) !== false ) {
-				$query_var = $this->id;
+				$query_var = $this->alias;
 			} else {
 				$query_var = false;
 			}
@@ -208,7 +208,7 @@ class Taxonomy extends RewritableRepository {
 		/**
 		 * Cache for registration.
 		 */
-		self::$taxonomies[] = [ 'taxonomy' => $this->id, 'object_type' => $this->object_type, 'args' => $this->args ];
+		self::$taxonomies[] = [ 'taxonomy' => $this->alias, 'object_type' => $this->object_type, 'args' => $this->args ];
 	}
 
 }

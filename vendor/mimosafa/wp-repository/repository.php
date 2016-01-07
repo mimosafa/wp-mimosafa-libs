@@ -9,7 +9,7 @@ namespace mimosafa\WP\Repository;
 abstract class Repository {
 
 	/**
-	 * {Post type|Taxonomy|Role} alias name.
+	 * {Post type|Taxonomy|Role} name.
 	 * Use as {post type|taxonomy} rerite slug.
 	 *
 	 * @var string
@@ -21,7 +21,7 @@ abstract class Repository {
 	 *
 	 * @var string
 	 */
-	protected $id;
+	protected $alias;
 
 	/**
 	 * Arguments for {post type|taxonomy|role} registration.
@@ -45,11 +45,11 @@ abstract class Repository {
 	protected static $instances = [];
 
 	/**
-	 * {Post types|Taxonomies|Roles} `id` <=> `name` map.
+	 * {Post types|Taxonomies|Roles} `alias` <=> `name` map.
 	 *
 	 * @var array
 	 */
-	protected static $ids = [];
+	protected static $names = [];
 
 	/**
 	 * WordPress built-in {post types|taxonomies|roles}.
@@ -71,16 +71,16 @@ abstract class Repository {
 	 * @access protected
 	 *
 	 * @param  string $name
-	 * @param  string $id
+	 * @param  string $alias
 	 * @param  array  $args
 	 * @return void
 	 */
-	protected function __construct( $name, $id, Array $args, $builtin ) {
+	protected function __construct( $name, $alias, Array $args, $builtin ) {
 		$this->name = $name;
-		$this->id   = $id;
+		$this->alias   = $alias;
 		$this->args = $args;
 		$this->_builtin = $builtin;
-		static::$ids[$id] = $name;
+		static::$names[$alias] = $name;
 	}
 
 	/**
@@ -98,11 +98,11 @@ abstract class Repository {
 	 * @access public
 	 *
 	 * @param  string       $name
-	 * @param  string       $id
+	 * @param  string       $alias
 	 * @param  array|string $args
 	 * @return mimosafa\WP\CComponent\PostType|null
 	 */
-	public static function generate( $name, $id = '', $args = [] ) {
+	public static function init( $name, $alias = '', $args = [] ) {
 		if ( ! filter_var( $name ) ) {
 			/**
 			 * $name must be valid string.
@@ -125,68 +125,84 @@ abstract class Repository {
 			/**
 			 * If built-in post type, $id is fixed.
 			 */
-			$id = static::$builtins[$name];
+			$alias = static::$builtins[$name];
 			$builtin = true;
 		}
-		else if ( static::validateStrings( $name, $id ) ) {
-			if ( isset( static::$ids[$name] ) ) {
+		else if ( static::validateStrings( $name, $alias ) ) {
+			if ( isset( static::$names[$name] ) ) {
 				/**
-				 * The $name same as an existing $id is not allowed.
+				 * The $name same as an existing $alias is not allowed.
 				 */
 				return null;
 			}
-			if ( in_array( $id, static::$ids, true ) ) {
+			if ( in_array( $alias, static::$names, true ) ) {
 				/**
-				 * The $id same as an existing $name is not allowed.
+				 * The $alias same as an existing $name is not allowed.
 				 */
 				return null;
 			}
-			if ( in_array( $id, static::$builtins, true ) ) {
+			if ( in_array( $alias, static::$builtins, true ) ) {
 				/**
 				 * If {post type|taxonomy|role} is not built-in,
-				 * the $id same as an built-in one is not allowed.
+				 * the $alias same as an built-in one is not allowed.
 				 */
 				return null;
 			}
 		}
 		else {
 			/**
-			 * Invalid $name|$id string.
+			 * Invalid $name|$alias string.
 			 */
 			return null;
 		}
 		$args = wp_parse_args( $args, static::$defaults );
-		return static::$instances[$name] = new static( $name, $id, $args, $builtin );
+		return static::$instances[$name] = new static( $name, $alias, $args, $builtin );
 	}
 
 	/**
-	 * Validate $name|$id strings.
+	 * Instance getter.
 	 *
-	 * @access protected
-	 *
-	 * @param  string $name
-	 * @param  string &$id
-	 * @return boolean
+	 * @access public
 	 */
-	protected static function validateStrings( $name, &$id ) {
-		if ( $name = self::validateID( $name ) ) {
-			$options = [ 'options' => get_called_class() . '::validateID' ];
-			$id = isset( $id ) && $id ? filter_var( $id, \FILTER_CALLBACK, $options ) : $name;
-			return !! $id;
+	public static function getInstance( $var ) {
+		if ( isset( static::$instances[$var] ) ) {
+			return static::$instances[$var];
+		}
+		if ( isset( static::$names[$var] ) ) {
+			$name = static::$names[$var];
+			return static::$instances[$name];
 		}
 		return false;
 	}
 
 	/**
-	 * Validate $id string.
+	 * Validate $name|$alias strings.
 	 *
 	 * @access protected
 	 *
-	 * @param  string $id
+	 * @param  string $name
+	 * @param  string &$alias
+	 * @return boolean
+	 */
+	protected static function validateStrings( $name, &$alias ) {
+		if ( $name = self::validateAlias( $name ) ) {
+			$options = [ 'options' => get_called_class() . '::validateAlias' ];
+			$alias = isset( $alias ) && $alias ? filter_var( $alias, \FILTER_CALLBACK, $options ) : $name;
+			return !! $alias;
+		}
+		return false;
+	}
+
+	/**
+	 * Validate $alias string.
+	 *
+	 * @access protected
+	 *
+	 * @param  string $alias
 	 * @return string|null
 	 */
-	protected static function validateID( $id ) {
-		return filter_var( $id ) && $id === sanitize_key( $id ) ? $id : null;
+	protected static function validateAlias( $alias ) {
+		return filter_var( $alias ) && $alias === sanitize_key( $alias ) ? $alias : null;
 	}
 
 	/**
@@ -199,6 +215,41 @@ abstract class Repository {
 	 */
 	protected static function labelize( $string ) {
 		return ucwords( str_replace( [ '-', '_' ], ' ', $string ) );
+	}
+
+	/**
+	 * Create repositories interface.
+	 *
+	 * @access public
+	 */
+	public static function parseJSON( $text ) {
+		if ( get_called_class() !== __CLASS__ ) {
+			return;
+		}
+		$array = json_decode( $text, true );
+		static::parseArray( $array );
+	}
+	public static function parseArray( Array $array ) {
+		if ( get_called_class() !== __CLASS__ ) {
+			return;
+		}
+		foreach ( $array as $name => $args ) {
+			if ( ! isset( $args['repository'] ) ) {
+				continue;
+			}
+			if ( $args['repository'] === 'post_type' ) {
+				$class = __NAMESPACE__ . '\\PostType';
+			}
+			else if ( $args['repository'] === 'taxonomy' ) {
+				$class = __NAMESPACE__ . '\\Taxonomy';
+			}
+			else {
+				continue;
+			}
+			$alias = isset( $args['alias'] ) && filter_var( $args['alias'] ) ? $args['alias'] : $name;
+			$repository_args = isset( $args['arguments'] ) ? $args['arguments'] : [];
+			$class::init( $name, $alias, $repository_args );
+		}
 	}
 
 }

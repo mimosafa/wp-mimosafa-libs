@@ -18,11 +18,11 @@ abstract class RewritableRepository extends Repository {
 	protected static $instances = [];
 
 	/**
-	 * Post types & Taxonomies `id` <=> `name` map.
+	 * Post types & Taxonomies `alias` <=> `name` map.
 	 *
 	 * @var array
 	 */
-	protected static $ids = [];
+	protected static $names = [];
 
 	/**
 	 * Post types arguments
@@ -50,13 +50,15 @@ abstract class RewritableRepository extends Repository {
 	 *
 	 * @access protected
 	 *
+	 * @uses  mimosafa\WP\Repository\Repository::__construct()
+	 *
 	 * @param  string $name
-	 * @param  string $id
+	 * @param  string $alias
 	 * @param  array  $args
 	 * @return void
 	 */
-	protected function __construct( $name, $id, Array $args, $builtin ) {
-		parent::__construct( $name, $id, $args, $builtin );
+	protected function __construct( $name, $alias, Array $args, $builtin ) {
+		parent::__construct( $name, $alias, $args, $builtin );
 		/**
 		 * Regulate arguments.
 		 */

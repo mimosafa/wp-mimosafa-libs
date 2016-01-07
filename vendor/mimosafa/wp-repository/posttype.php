@@ -49,7 +49,14 @@ class PostType extends RewritableRepository {
 		'rewrite'              => true,
 		'query_var'            => true,
 		'can_export'           => true,
-		'delete_with_user'     => null
+		'delete_with_user'     => null,
+		/**
+		 * Additional arguments.
+		 *
+		 * @todo
+		 */
+		'singular' => '',
+		'plural'   => '',
 	];
 
 	/**
@@ -177,20 +184,20 @@ class PostType extends RewritableRepository {
 	}
 
 	/**
-	 * Validate $id string for post type.
+	 * Validate $alias string for post type.
 	 *
 	 * @access protected
 	 *
-	 * @param  string $id
+	 * @param  string $alias
 	 * @return string|null
 	 */
-	protected static function validateID( $id ) {
+	protected static function validateAlias( $alias ) {
 		/**
 		 * Post type name regulation.
 		 *
 		 * @see http://codex.wordpress.org/Function_Reference/register_post_type#Parameters
 		 */
-		return parent::validateID( $id ) && strlen( $id ) < 21 ? $id : null;
+		return parent::validateAlias( $alias ) && strlen( $alias ) < 21 ? $alias : null;
 	}
 
 	/**
@@ -199,7 +206,7 @@ class PostType extends RewritableRepository {
 	 * @access public
 	 */
 	public function regulation() {
-		if ( post_type_exists( $this->id ) ) {
+		if ( post_type_exists( $this->alias ) ) {
 			return;
 		}
 		/**
@@ -281,7 +288,7 @@ class PostType extends RewritableRepository {
 			if ( filter_var( $rewrite, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE ) !== false ) {
 				$rewrite = wp_parse_args( is_array( $rewrite ) ? $rewrite : [], self::$rewrite_defaults );
 				if ( ! $rewrite['slug'] || ! is_string( $rewrite['slug'] ) ) {
-					$rewrite['slug'] = $this->name !== $this->id ? $this->name : $this->id;
+					$rewrite['slug'] = $this->name !== $this->alias ? $this->name : $this->alias;
 				}
 				$rewrite['with_front'] = filter_var( $rewrite['with_front'], \FILTER_VALIDATE_BOOLEAN );
 				$rewrite['pages']   = filter_var( $rewrite['pages'],   \FILTER_VALIDATE_BOOLEAN );
@@ -333,7 +340,7 @@ class PostType extends RewritableRepository {
 		/**
 		 * Cache for registration.
 		 */
-		self::$post_types[] = [ 'post_type' => $this->id, 'args' => $this->args ];
+		self::$post_types[] = [ 'post_type' => $this->alias, 'args' => $this->args ];
 	}
 
 	/**

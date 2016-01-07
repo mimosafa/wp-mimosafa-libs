@@ -1,5 +1,5 @@
 <?php
-namespace mimosafa\WP\Admin;
+namespace mimosafa\WP\UI;
 
 /**
  * WordPress admin UI helper class for {post.php|post-new.php}.
@@ -89,6 +89,11 @@ class Post {
 		did_action( 'admin_init' ) ? $this->admin_init() : add_action( 'admin_init', [ $this, 'admin_init' ] );
 	}
 
+	/**
+	 * Arguments setter.
+	 *
+	 * @access public
+	 */
 	public function __set( $name, $value ) {
 		$this->args[$name] = $value;
 	}
@@ -203,7 +208,6 @@ class Post {
 			if ( isset( $args['callback'] ) && is_callable( $args['callback'] ) ) {
 				$func = $args['callback'];
 				unset( $args['callback'] );
-				unset( $args['context'] );
 				call_user_func( $func, $post, $args );
 			}
 		}
@@ -226,12 +230,24 @@ class Post {
 	protected function add_meta_box( Array $args ) {
 		extract( $args );
 		$title = filter_var( $title ) ? esc_html( $title ) : esc_html( self::labelize( $id ) );
-		unset( $args['id'] );
-		unset( $args['callback'] );
-		unset( $args['context'] );
-		add_meta_box( $id, $title, $callback, null, $context, $priority, $args );
+		add_meta_box( $id, $title, [ $this, 'add_meta_box_callback' ], null, $context, $priority, $args );
 	}
 
+	public function add_meta_box_callback( $post, $box ) {
+		$args = $box['args'];
+		$callback = $args['callback'];
+		unset( $args['callback'] );
+		call_user_func( $callback, $post, $args );
+	}
+
+	/**
+	 * Labelize
+	 *
+	 * @access protected
+	 *
+	 * @param  string $string
+	 * @return string
+	 */
 	protected static function labelize( $string ) {
 		return ucwords( str_replace( [ '-', '_' ], ' ', $string ) );
 	}
