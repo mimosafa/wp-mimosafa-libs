@@ -19,3 +19,13 @@ if ( ! function_exists( 'wp_roles' ) ) {
 		return $wp_roles;
 	}
 }
+
+/**
+ * YAML parser.
+ */
+if ( ! function_exists( 'yaml_parse_file' ) ) {
+	require_once __DIR__ . '/vendor/mustangostang/spyc/Spyc.php';
+	function yaml_parse_file( $filename ) {
+		return Spyc::YAMLLoad( $filename );
+	}
+}

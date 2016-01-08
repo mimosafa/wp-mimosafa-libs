@@ -210,32 +210,32 @@ class PostType extends RewritableRepository {
 			return;
 		}
 		/**
-		 * @var array          $labels
-		 * @var string         $description
-		 * @var boolean        $public
-		 * @var boolean        $hierarchical
-		 * @var boolean        $exclude_from_search
-		 * @var boolean        $publicly_queryable
-		 * @var boolean        $show_ui
-		 * @var boolean|string $show_in_menu
-		 * @var boolean        $show_in_nav_menus
-		 * @var boolean        $show_in_nav_menus
-		 * @var boolean        $show_in_admin_bar
-		 * @var int            $menu_position
-		 * @var string         $menu_icon
-		 * @var string|array   $capability_type
-		 * @var array          $capabilities
-		 * @var boolean        $map_meta_cap
-		 * @var array          $supports
-		 * @var callable       $register_meta_box_cb
-		 * @var array          $taxonomies
-		 * @var boolean        $has_archive
-		 * @var boolean|array  $rewrite
-		 * @var boolean|string $query_var
-		 * @var boolean        $can_export
-		 * @var boolean        $delete_with_user
+		 * @var array          &$labels
+		 * @var string         &$description
+		 * @var boolean        &$public
+		 * @var boolean        &$hierarchical
+		 * @var boolean        &$exclude_from_search
+		 * @var boolean        &$publicly_queryable
+		 * @var boolean        &$show_ui
+		 * @var boolean|string &$show_in_menu
+		 * @var boolean        &$show_in_nav_menus
+		 * @var boolean        &$show_in_nav_menus
+		 * @var boolean        &$show_in_admin_bar
+		 * @var int            &$menu_position
+		 * @var string         &$menu_icon
+		 * @var string|array   &$capability_type
+		 * @var array          &$capabilities
+		 * @var boolean        &$map_meta_cap
+		 * @var array          &$supports
+		 * @var callable       &$register_meta_box_cb
+		 * @var array          &$taxonomies
+		 * @var boolean        &$has_archive
+		 * @var boolean|array  &$rewrite
+		 * @var boolean|string &$query_var
+		 * @var boolean        &$can_export
+		 * @var boolean        &$delete_with_user
 		 */
-		extract( $this->args );
+		extract( $this->args, \EXTR_REFS );
 
 		/**
 		 * Regulate arguments.
@@ -331,11 +331,6 @@ class PostType extends RewritableRepository {
 			$labels['singular_name'] = $labels['name'];
 		}
 		self::generateLabels( $labels );
-
-		/**
-		 * Compact the regulated arguments.
-		 */
-		$this->args = compact( array_keys( $this->args ) );
 
 		/**
 		 * Cache for registration.
