@@ -339,7 +339,7 @@ class PostType extends RewritableRepository {
 	}
 
 	/**
-	 * Create post type labels & expand labels.
+	 * Create post type labels.
 	 *
 	 * @access private
 	 *

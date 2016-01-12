@@ -64,6 +64,34 @@ class Taxonomy extends RewritableRepository {
 	];
 
 	/**
+	 * Label formats.
+	 *
+	 * @var array
+	 */
+	protected static $label_formats = [
+		// Common
+		'name'          => null,
+		'singular_name' => null,
+		'search_items'  => [ 'plural',   'Search %s' ],
+		'all_items'     => [ 'plural',   'All %s' ],
+		'edit_item'     => [ 'singular', 'Edit %s' ],
+		'view_item'     => [ 'singular', 'View %s' ],
+		'update_item'   => [ 'singular', 'Update %s' ],
+		'add_new_item'  => [ 'singular', 'Add New %s' ],
+		'new_item_name' => [ 'singular', 'New %s Name' ],
+		'not_found'     => [ 'plural',   'No %s found.' ],
+		'no_terms'      => [ 'plural',   'No %s' ],
+		// No-hierarchical
+		'popular_items'              => [ 'singular', 'Popular %s' ],
+		'separate_items_with_commas' => [ 'plural',   'Separate %s with commas' ],
+		'add_or_remove_items'        => [ 'plural',   'Add or remove %s' ],
+		'choose_from_most_used'      => [ 'plural',   'Choose from the most used %s' ],
+		// Hierarchical
+		'parent_item'       => [ 'singular', 'Parent %s' ],
+		'parent_item_colon' => [ 'singular', 'Parent %s:' ],
+	];
+
+	/**
 	 * Constructor.
 	 *
 	 * @access protected
@@ -101,7 +129,7 @@ class Taxonomy extends RewritableRepository {
 			 *
 			 * @see http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
 			 */
-			if ( strlen( $alias ) > 32 || @preg_match( '/[0-9]\-/', $alias ) ) {
+			if ( strlen( $alias ) > 32 || @preg_match( '/[0-9\-]/', $alias ) ) {
 				$alias = null;
 			}
 		}
@@ -118,24 +146,24 @@ class Taxonomy extends RewritableRepository {
 			return;
 		}
 		/**
-		 * @var array          $labels
-		 * @var string         $description
-		 * @var boolean        $public
-		 * @var boolean        $hierarchical
-		 * @var boolean        $show_ui
-		 * @var boolean        $show_in_menu
-		 * @var boolean        $show_in_nav_menus
-		 * @var boolean        $show_tagcloud
-		 * @var boolean        $show_in_quick_edit
-		 * @var boolean        $show_admin_column
-		 * @var callable       $meta_box_cb
-		  @var array          $capabilities
-		 * @var boolean|array  $rewrite
-		 * @var boolean|string $query_var
-		 * @var callable       $update_count_callback
-		 * @var array|string   $object_type
+		 * @var array          &$labels
+		 * @var string         &$description
+		 * @var boolean        &$public
+		 * @var boolean        &$hierarchical
+		 * @var boolean        &$show_ui
+		 * @var boolean        &$show_in_menu
+		 * @var boolean        &$show_in_nav_menus
+		 * @var boolean        &$show_tagcloud
+		 * @var boolean        &$show_in_quick_edit
+		 * @var boolean        &$show_admin_column
+		 * @var callable       &$meta_box_cb
+		  @var array          &$capabilities
+		 * @var boolean|array  &$rewrite
+		 * @var boolean|string &$query_var
+		 * @var callable       &$update_count_callback
+		 * @var array|string   &$object_type
 		 */
-		extract( $this->args );
+		extract( $this->args, \EXTR_REFS );
 
 		/**
 		 * Regulate arguments.
@@ -198,17 +226,53 @@ class Taxonomy extends RewritableRepository {
 		if ( ! isset( $labels['singular_name'] ) || ! filter_var( $labels['singular_name'] ) ) {
 			$labels['singular_name'] = $labels['name'];
 		}
-		#self::createLabels( $labels, $hierarchical );
+		self::generateLabels( $labels, $hierarchical );
 
-		/**
-		 * Compact the regulated arguments.
-		 */
-		$this->args = compact( array_keys( $this->args ) );
+		if ( $this->object_type ) {
+			$this->object_type_regulation();
+		}
 
 		/**
 		 * Cache for registration.
 		 */
 		self::$taxonomies[] = [ 'taxonomy' => $this->alias, 'object_type' => $this->object_type, 'args' => $this->args ];
+	}
+
+	/**
+	 * Create taxonomy labels.
+	 *
+	 * @access private
+	 *
+	 * @param  array &$labels
+	 */
+	private static function generateLabels( &$labels ) {
+		$singular = $labels['singular_name'];
+		$plural   = $labels['name'];
+		foreach ( self::$label_formats as $key => $format ) {
+			if ( ! isset( $labels[$key] ) || ! filter_var( $labels[$key] ) ) {
+				if ( is_array( $format ) && ( $string = ${$format[0]} ) ) {
+					$labels[$key] = esc_html( sprintf( __( $format[1], 'wp-mimosafa-libs' ), $string ) );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Regulate object types.
+	 *
+	 * @access private
+	 */
+	private function object_type_regulation() {
+		foreach ( $this->object_type as $i => $type ) {
+			if ( isset( self::$names[$type] ) ) {
+				continue;
+			}
+			if ( in_array( $type, self::$names, true ) ) {
+				$this->object_type[$i] = array_search( $type, self::$names, true );
+				continue;
+			}
+			unset( $this->object_type[$i] );
+		}
 	}
 
 }
