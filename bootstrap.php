@@ -9,4 +9,4 @@ ClassLoader::register( 'mimosafa\WP\Model',      __DIR__ . '/vendor/mimosafa/wp-
 ClassLoader::register( 'mimosafa\WP\UI',         __DIR__ . '/vendor/mimosafa/wp-ui'         );
 ClassLoader::register( 'mimosafa\WP',            __DIR__ . '/vendor/mimosafa'               );
 
-WP\Http\Request::init();
+# WP\Http\Request::init();

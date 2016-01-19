@@ -22,9 +22,16 @@ if ( ! function_exists( 'wp_roles' ) ) {
 
 /**
  * YAML parser.
+ *
+ * @uses Spyc::YAMLLoad()
  */
 if ( ! function_exists( 'yaml_parse_file' ) ) {
-	require_once __DIR__ . '/vendor/mustangostang/spyc/Spyc.php';
+	if ( ! class_exists( 'Spyc' ) ) {
+		/**
+		 * For WP-CLI
+		 */
+		require_once __DIR__ . '/vendor/mustangostang/spyc/Spyc.php';
+	}
 	function yaml_parse_file( $filename ) {
 		return Spyc::YAMLLoad( $filename );
 	}
